@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 
 namespace Command_Interpreter
 {
     internal class Ci
     {
+        
+        public static bool terminate = true;
         static public void List()
         {
             Type typeCi = typeof(Ci);
@@ -18,14 +15,22 @@ namespace Command_Interpreter
             MethodInfo[] methodInfoCo = typeCo.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public);
             var allM = methodInfoCi.Concat(methodInfoCo);
 
-            Console.WriteLine("Command info: ");
-            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("\n Command info: \n");
 
             foreach (var methodInfo in allM)
             {
-                Console.WriteLine(methodInfo.Name);
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.Write($"   " + methodInfo.Name);
+                string methodName = methodInfo.Name.ToString();
+                foreach (var tuplaHelp in Commands.tuple_commands)
+                {
+                    if (tuplaHelp.func.Method.Name == methodName)
+                    {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine($"  - " + tuplaHelp.help);
+                    }
+                }
             }
-
         }
         static public string Sql(string SQLRequest)
         {
@@ -49,6 +54,11 @@ namespace Command_Interpreter
             Console.WriteLine("Multiply method have been call");
             return code;
         }
+        static public void Exit()
+        {
+            Environment.Exit(0);
+            terminate = true;
+        }
     }
     public static class Co
     {
@@ -56,6 +66,11 @@ namespace Command_Interpreter
         {
             Console.WriteLine("Fov method have been call");
             return fov;
+        }
+
+        public static void Clear()
+        {
+            Console.Clear();
         }
     }
 }
