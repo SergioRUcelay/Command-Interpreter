@@ -1,76 +1,45 @@
-﻿using System.Reflection;
+﻿using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Command_Interpreter
 {
     internal class Ci
     {
-        
-        //public static bool terminate = true;
-            //static public void List()
-            //{
-            //    Type typeCi = typeof(Ci);
-            //    Type typeCo = typeof(Co);
-
-            //    MethodInfo[] methodInfoCi = typeCi.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public);
-            //    MethodInfo[] methodInfoCo = typeCo.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public);
-            //    var allM = methodInfoCi.Concat(methodInfoCo);
-
-            //    Console.WriteLine("\n Command info: \n");
-
-            //    int maxW = allM.Max(methodInfo => methodInfo.Name.Length);
-
-            //    foreach (var methodInfo in allM)
-            //    {
-            //        Console.ForegroundColor = ConsoleColor.Blue;
-            //        Console.Write($"   " + methodInfo.Name.PadRight(maxW));
-            //        string methodName = methodInfo.Name.ToString();
-            //        foreach (var tuplaHelp in Commands.tuple_commands)
-            //        {
-            //            if (tuplaHelp.func.Method.Name == methodName)
-            //            {
-            //                Console.ForegroundColor = ConsoleColor.White;
-            //                Console.WriteLine($" - " + tuplaHelp.help);
-            //            }
-            //        }
-            //    }
-            //}
-        static public string Sql(string SQLRequest)
+        static public string String(string SQLRequest, string SQLRequest2)
         {
-            Console.WriteLine(SQLRequest);
+            Console.WriteLine("String method have been call");
+            Console.WriteLine(SQLRequest +"," + SQLRequest2);
             return SQLRequest;
         }
 
-        static public int Add(int p, int a, int h)
+        static public int Int(int p, string pepe)
         {
-            Console.WriteLine("Addition method have been call");
-            Console.WriteLine(p+a+h);
+            Console.WriteLine("Int method have been call");
+            //Console.WriteLine(p+a+h);
             return p;
         }
 
-        static public int[] Sub(int[] code)
+        static public int[] Array(int[] code)
         {
-            Console.WriteLine("Subtraction method have been call");
+            Console.WriteLine("Array method have been call");
+            Console.WriteLine(code);
+            foreach (int i in code)
+            {
+                Console.WriteLine(i);
+            }
             return code;
         }
-        static public float Multi(float code, float cod3)
+        static public float Float(float code, Vector2 er)
         {
-            Console.WriteLine("Multiply method have been call");
+            Console.WriteLine("Float method have been call");
             return code;
         }
-     
-    }
-    public static class Co
-    {
-        static public void Fov()
+        static public bool Bool(bool value)
         {
-            Console.WriteLine("Fov method have been call");
-            //return fov;
-        }
-
-        public static void Clear()
-        {
-            Console.Clear();
+            Console.WriteLine("Bool method have been call");
+            Console.WriteLine(value.ToString());
+            return value;
         }
     }
 }
