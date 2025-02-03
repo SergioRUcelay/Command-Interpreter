@@ -13,7 +13,7 @@ namespace Command_Interpreter
             return SQLRequest;
         }
 
-        static public int Int(int p, string pepe)
+        static public int Int(int p)
         {
             Console.WriteLine("Int method have been call");
             //Console.WriteLine(p+a+h);
