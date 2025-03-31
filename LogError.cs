@@ -6,7 +6,7 @@ namespace Command_Interpreter
     {
         public DateTime DateTimeError { get; set; }
         public string? DelegateCalled { get; set; }
-        public string? Error { get; set; }
+        public string? Notification { get; set; }
         public string? ThrowError { get; set; }
     }
 }

@@ -1,42 +1,25 @@
 ﻿using System.Reflection;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace Command_Interpreter
 {
-    internal class Commands
+    public class Commands
     {
         public static bool terminate = false;
 
-        public readonly List<(string name, Delegate func, string info)> tuple_commands = [];
-        private LogError _noError;
+        private readonly List<(string name, Delegate func, string info)> tuple_commands = [];
+
         private Delegate _CalledFunc;
-        private XmlSerializer _serializerFor_LogError_Class;
-        private readonly string _logsDirectory;
-        private readonly string _logErrorFile;
-        private readonly string _nameLogErrorFile;
+        private Parameters _parameters;
 
         private readonly string list = "Function for list all functions of all program";
         private readonly string help = "The help text of the Command Interpreter";
 
         public Commands()
         {
-
             tuple_commands.Add(("List", List, list));
             tuple_commands.Add(("Help", Help, help));
 
-            _logsDirectory = Directory.CreateDirectory("logs").ToString();
-            _serializerFor_LogError_Class = new XmlSerializer(typeof(LogError));
-            _nameLogErrorFile = "logfile.xml";
-            _logErrorFile = Path.Combine(_logsDirectory, _nameLogErrorFile);
-
-            _noError = new LogError
-            {
-                DateTimeError = DateTime.Now,
-                Error = "Session created successfully"
-            };
-
-            WriteNoErrorXml(_noError);
+            ErrorFileLog.WriteNoErrorXml();
         }
 
         /// <summary>
@@ -47,120 +30,82 @@ namespace Command_Interpreter
         {
             if (textConsole.Length == 0)
                 return;
-            try
+            //try
+            //{
+            // Seeking the function.
+            string command = textConsole[0].ToLower();
+            _CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
+
+            // Seeking parameters. In this case: Int, Float, String, Bool and Array.
+            if (_CalledFunc != null)
             {
-                // Seeking the function.
-                string command = textConsole[0].ToLower();
-                //Delegate delegateFind = tuple_commands.Find(a => a.name.ToLower() == command).func;
-                _CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
+                MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
+                _parameters = new Parameters(methodInfo, textConsole);
 
-                // Seeking parameters. In this case: Int, Float, String, Bool and Array.
-                if (_CalledFunc != null)
+                if (methodInfo.GetParameters().Length == textConsole.Length - 1)
                 {
-                    MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
-                    List<object> ps = [];
-                    int currentToken = 1;
-                    foreach (var param in methodInfo.GetParameters())
-                    {
-                        if (param.ParameterType == typeof(int))
-                            ps.Add(int.Parse(textConsole[currentToken++]));
-                        else if (param.ParameterType == typeof(float))
-                            ps.Add(float.Parse(textConsole[currentToken++]));
-                        else if (param.ParameterType == typeof(string))
-                        {
-                            //.       if (textConsole[currentToken].Contains('-'))
-                            //        ps.Add(string.Join(" ", textConsole[currentToken++].Trim('-')));
-                            ps.Add(string.Join(" ", textConsole[currentToken++]));
-                        }
-                        else if (param.ParameterType == typeof(bool))
-                            ps.Add(bool.Parse(textConsole[currentToken++]));
-                        else if (param.ParameterType.IsArray)
-                        {
-                            string newtype = "";
-                            foreach (var item in textConsole[currentToken])
-                            {
-                                if (item != '[' && item != ']')
-                                {
-                                    newtype += item;
-                                }
-                            }
-
-                            var newarray = newtype.Split(',');
-
-                            if (param.ParameterType == typeof(int[]))
-                            {
-                                List<int> ints = [];
-                                for (int i = 0; i < (newarray.Length); i++)
-                                {
-                                    if (param.ParameterType == typeof(int[]))
-                                        ints.Add(int.Parse(newarray[i]));
-                                }
-                                ps.Add(ints.ToArray());
-
-                            }
-
-                            if (param.ParameterType == typeof(float[]))
-                            {
-                                List<float> floats = [];
-                                for (int i = 0; i < (newarray.Length); i++)
-                                {
-                                    if (param.ParameterType == typeof(float[]))
-                                        floats.Add(float.Parse(newarray[i]));
-                                }
-                                ps.Add(floats.ToArray());
-                            }
-                        }
-                    }
-                    if (methodInfo.GetParameters().Length == textConsole.Length - 1)
-                    {
-                        var ret = methodInfo.Invoke(_CalledFunc.Target, ps.ToArray());
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write(" Too many arguments. The ");
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.Write(textConsole[0].ToString());
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write(" function only supports ");
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.Write((methodInfo.GetParameters().Length).ToString());
-                        Console.WriteLine();
-                        ErrorXmlLogFile(null, "Too many arguments");
-                    }
+                    var function = methodInfo.Invoke(_CalledFunc.Target, _parameters.SeekParams());
+                }
+                else if (methodInfo.GetParameters().Length < textConsole.Length - 1)
+                {
+                    ErrorFileLog.ErrorXmlLogFile(null, _CalledFunc, "The number of arguments is less than necessary");
+#if DEBUG
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write(" Too many arguments\n");
+#endif
                 }
                 else
                 {
+                    ErrorFileLog.ErrorXmlLogFile(null, _CalledFunc, "The number of arguments is higher than necessary");
+#if DEBUG
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Command not found");
-                    Console.ResetColor();
+                    Console.Write(" Few arguments\n");
+#endif
                 }
             }
-            catch (IndexOutOfRangeException ex)
+
+            else
             {
+#if DEBUG
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(" Sorry, incomplete command! Function arguments required.");
-                ErrorXmlLogFile(ex, "Function argument missing");
+                Console.WriteLine(" Command does not exist");
+#endif
+                ErrorFileLog.ErrorXmlLogFile(null, "The string does not represent any function");
             }
-            catch (FormatException fo)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(" Sorry, incorrect type format!");
-                ErrorXmlLogFile(fo, "Invalid argument");
-         
-            }
-            catch (NullReferenceException refr)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(" Sorry, incorrect type format!");
-                ErrorXmlLogFile(refr, "Fuction dosen't exist");
-            }
-            catch (TargetParameterCountException target)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(" Sorry, incorrect type format!.");
-                ErrorXmlLogFile(target, "Function dosen't exist");
-            }
+            //}
+
+            // This would be called when the arguments do not exist.
+            //catch (IndexOutOfRangeException notexist)
+            //{
+            //    Console.ForegroundColor = ConsoleColor.Red;
+            //    Console.WriteLine(" Sorry, incomplete command! Function arguments required.");
+            //    ErrorXmlLogFile(notexist, "Function argument wrong, missing or incompleted");
+            //}
+
+            // This would be called when the types of arguments are not correct.
+            //catch (FormatException correctarguments)
+            //{
+            //    Console.ForegroundColor = ConsoleColor.Red;
+            //    Console.WriteLine("Sorry, incorrect type format!");
+            //    ErrorXmlLogFile(correctarguments, "The type of arguments was wrong");
+
+            //}
+
+            // Null referent?
+            //catch (NullReferenceException nullreference)
+            //{
+            //    Console.ForegroundColor = ConsoleColor.Red;
+            //    Console.WriteLine(" 2 - Sorry, incorrect type format!");
+            //    ErrorXmlLogFile(nullreference, "Fuction dosen't exist");
+            //}
+
+            // This would be called when the strings arguments are not correct.
+            //catch (TargetParameterCountException stringsformats)
+            //{
+            //    Console.ForegroundColor = ConsoleColor.Red;
+            //    Console.WriteLine("Sorry, incorrect strings type format!.");
+            //    ErrorXmlLogFile(stringsformats, "The string parameter needs '-' as a prefix");
+            //}
         }
 
         public void AddFunc(string command, Delegate func, string info)
@@ -174,20 +119,11 @@ namespace Command_Interpreter
         public void RemoveFunc(string name)
         {
             if (!tuple_commands.Exists(x => x.name.ToLower() == name.ToLower()))
-            {
-                //throw new InvalidOperationException($"Function with name {name} don't exist");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($" Function with name {name} don't exist");
-                Console.ResetColor();
-
-            }
+                throw new InvalidOperationException($"Function with name {name} don't exist");
             else
             {
                 var index = tuple_commands.FindIndex(y => y.name.ToLower() == name.ToLower());
                 tuple_commands.Remove(tuple_commands[index]);
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($" Function with name {name} has been removed");
-                Console.ResetColor();
             }
         }
 
@@ -208,57 +144,6 @@ namespace Command_Interpreter
         {
             List();
             Console.WriteLine("Here the help text of the Command Interpreter");
-        }
-
-        private void WriteNoErrorXml(LogError noerror)
-        {
-            using (var writer = XmlWriter.Create(_logErrorFile, new XmlWriterSettings { Indent = true, NewLineOnAttributes = true }))
-                _serializerFor_LogError_Class.Serialize(writer, noerror);
-        }
-
-        public void ErrorXmlLogFile(Exception? exception, string error)
-        {
-            LogError newError = new LogError()
-            {
-                ThrowError = exception?.Message,
-                Error = error,
-                DelegateCalled = _CalledFunc.GetMethodInfo().Name.ToString(),
-                DateTimeError = DateTime.Now
-            };
-            WriteNewErrorXml(newError);
-        }
-
-        private void WriteNewErrorXml(LogError newerror)
-        {
-            string errorClassXmlLog;
-            using (StringWriter writer = new StringWriter())
-            {
-                _serializerFor_LogError_Class.Serialize(writer, newerror);
-                errorClassXmlLog = writer.ToString();
-            }
-
-            // Cargamos el archivo de log que ya tenemos.
-            // Load the existing file.
-            XmlDocument existingErrorFile = new XmlDocument(); 
-            existingErrorFile.Load(_logErrorFile);
-
-            // Instanciamos el nuevo "archivo temporal" donde vamos a guardar el nuevo error
-            // Instantiate a new temporal File, where we will save the new error.
-            XmlDocument tempError = new XmlDocument();
-            
-            // Cargamos la clase serializada en Xml en el archivo temporal.
-            // Load the serialize XmlClass in the temporal file.
-            tempError.LoadXml(errorClassXmlLog);
-            //temperror.LoadXml(writer.ToString());
-
-            // Instanciamos un nuevo Nodo.
-            // Instantiate a new Nodo.
-            XmlNode xmlNewErrorNode = existingErrorFile.ImportNode(tempError.DocumentElement, true); // El método ImporNode() -> Importa un nodo de otro documento al documento actual.
-
-            // Añadimos el nodo creado al archivo existente.
-            // Add the new Nodo to the log file.
-            existingErrorFile?.DocumentElement?.AppendChild(xmlNewErrorNode);
-            existingErrorFile?.Save(_logErrorFile);
         }
 
     }

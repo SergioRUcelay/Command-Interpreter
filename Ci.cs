@@ -1,6 +1,4 @@
 ﻿using System.Numerics;
-using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Command_Interpreter
 {
@@ -13,11 +11,18 @@ namespace Command_Interpreter
             return SQLRequest;
         }
 
-        static public int Int(int p)
+        static public int Int(int p, int f)
         {
             Console.WriteLine("Int method have been call");
-            //Console.WriteLine(p+a+h);
-            return p;
+            Console.WriteLine(p+f);
+            return p + f ;
+        }
+
+        static public int IntRest(int p, int f)
+        {
+            Console.WriteLine("Int method have been call");
+            Console.WriteLine(p - f);
+            return p - f;
         }
 
         static public int[] Array(int[] code)
@@ -30,9 +35,10 @@ namespace Command_Interpreter
             }
             return code;
         }
-        static public float Float(float code, Vector2 er)
+        static public float Float(float code)//, Vector2 er)
         {
             Console.WriteLine("Float method have been call");
+            Console.WriteLine(code);
             return code;
         }
         static public bool Bool(bool value)
