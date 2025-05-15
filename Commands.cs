@@ -8,9 +8,6 @@ namespace Command_Interpreter
 
         private readonly List<(string name, Delegate func, string info)> tuple_commands = [];
 
-        private Delegate _CalledFunc;
-        private Parameters _parameters;
-
         private readonly string list = "Function for list all functions of all program";
         private readonly string help = "The help text of the Command Interpreter";
 
@@ -26,25 +23,26 @@ namespace Command_Interpreter
         /// Retrieves the array on the command line and sorts the Delegate and its parameters.
         /// </summary>
         /// <param name="textConsole"></param>
-        public void Command(string[] textConsole)
+        public void Command(string verb)
         {
+            string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
             if (textConsole.Length == 0)
                 return;
             //try
             //{
             // Seeking the function.
             string command = textConsole[0].ToLower();
-            _CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
+            Delegate _CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
 
             // Seeking parameters. In this case: Int, Float, String, Bool and Array.
             if (_CalledFunc != null)
             {
                 MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
-                _parameters = new Parameters(methodInfo, textConsole);
 
                 if (methodInfo.GetParameters().Length == textConsole.Length - 1)
                 {
-                    var function = methodInfo.Invoke(_CalledFunc.Target, _parameters.SeekParams());
+                    var function = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, textConsole));
                 }
                 else if (methodInfo.GetParameters().Length < textConsole.Length - 1)
                 {
@@ -110,8 +108,14 @@ namespace Command_Interpreter
 
         public void AddFunc(string command, Delegate func, string info)
         {
-            if (tuple_commands.Exists(x => x.name == command))
-                throw new InvalidOperationException($"Function with name {command} already registered");
+            //TODO: check that all parameters in func are parseable by the system
+            
+            bool functionCanBeCalled = Parameters.ValidateParams(func.GetMethodInfo()); // ValidateParams must be implementesd.
+            //if some parameter can't be matched, give a warning to the user
+
+            // Checking that functuion called or parameters exist
+			if (tuple_commands.Exists(x => x.name == command) )
+                throw new InvalidOperationException($"Function with name {command} already registered or params not exist");
             else
                 tuple_commands.Add((command, func, info));
         }

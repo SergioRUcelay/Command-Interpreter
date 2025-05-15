@@ -4,44 +4,56 @@ namespace Command_Interpreter
 {
     internal class Parameters
     {
-        private readonly Dictionary<string, Delegate> _params;
-        private readonly MethodInfo _methodInfo;
+        private static readonly Dictionary<string, Delegate> _params;
 
-        private readonly string[] _parameters;
-        int currentToken = 1;
-        string stringtype;
-
-        public Parameters(MethodInfo methodInfo, string[] param)
+        static Parameters()
         {
-            _parameters = param;
-            _methodInfo = methodInfo;
+
             _params = new Dictionary<string, Delegate>()
             {
                 { "Int32", IntType }, { "String", StringType }, { "Boolean", BoolType }, { "Single", FloatType }
+
             };
         }
-
-        public object[] SeekParams()
+        public static bool ValidateParams(MethodInfo _methodInfo)
         {
-            List<object> arrayparams = new List<object>();
-            foreach (var currentFunc in _methodInfo.GetParameters())
-            {
-                if (_params.TryGetValue(currentFunc.ParameterType.Name, out Delegate dictionaryFunc))
-                    arrayparams.Add(dictionaryFunc.DynamicInvoke(_parameters[currentToken++]));
-            }
-            return arrayparams.ToArray();
+            return true;
         }
+            
 
-        public int IntType(string _parameters) => int.Parse(_parameters);
-
-        public bool BoolType(string _parameters) => bool.Parse(_parameters);
-
-        public float FloatType(string _parameters) => float.Parse(_parameters);
-
-        public string StringType(string _parameters)
+        public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
         {
-            if (_parameters.Contains('-'))
-                stringtype = _parameters.Trim('-');
+			int currentToken = 1;
+			List<object> arrayparams = [];
+            //first, we want to make sure we can match all the paramters that the function requires, which doesn't have to be all of them as some might
+            //have default values
+            //if not all required paramters are match, throw "not enough params" or something
+			foreach (var currentFunc in _methodInfo.GetParameters())
+			{
+				if (_params.TryGetValue(currentFunc.ParameterType.Name, out Delegate? dictionaryFunc))
+                {
+                    var peich = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
+
+                    if(peich != null)
+					    arrayparams.Add(dictionaryFunc);
+
+                }
+			}
+			return arrayparams.ToArray();
+		}
+
+        public static  int IntType(string _parameter) => int.Parse(_parameter);
+
+        public static bool BoolType(string _parameter) => bool.Parse(_parameter);
+
+        public static float FloatType(string _parameter) => float.Parse(_parameter);
+
+        public static string StringType(string _parameter)
+        {
+			string stringtype;
+
+			if (_parameter.Contains('-'))
+                stringtype = _parameter.Trim('-');
             else throw new FormatException();
             return stringtype;
         }

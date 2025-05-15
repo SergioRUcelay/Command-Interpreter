@@ -9,14 +9,14 @@ string Float = "Function accepting float numbers";
 string Bool = "Function accepting bool values";
 string IntRest = "Function resta dos numeros dados";
 
-    com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
-    com.AddFunc("String", Ci.String,String);
-    com.AddFunc("Array", Ci.Array, Array);
-    com.AddFunc("Float", Ci.Float, Float);
-    com.AddFunc("Int", Ci.Int, Int);
-    com.AddFunc("Bool", Ci.Bool, Bool);
-    com.AddFunc("inRest", Ci.IntRest, IntRest);
-    //com.AddFunc("Array", Ci.Array, Array);
+com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
+com.AddFunc("String", Ci.String,String);
+com.AddFunc("Array", Ci.Array, Array);
+com.AddFunc("Float", Ci.Float, Float);
+com.AddFunc("Int", Ci.Int, Int);
+com.AddFunc("Bool", Ci.Bool, Bool);
+com.AddFunc("inRest", Ci.IntRest, IntRest);
+//com.AddFunc("Array", Ci.Array, Array);
 
 
 Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -27,7 +27,7 @@ while (!Commands.terminate)
     Console.ForegroundColor = ConsoleColor.White;
     Console.Write("\nCi console..:> ");
     string? verb = Console.ReadLine();
-    string[] texConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-    com.Command(texConsole);
+    if (verb != null)
+        com.Command(verb);
 }
 
