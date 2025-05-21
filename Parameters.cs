@@ -8,18 +8,22 @@ namespace Command_Interpreter
 
         static Parameters()
         {
-
             _params = new Dictionary<string, Delegate>()
             {
                 { "Int32", IntType }, { "String", StringType }, { "Boolean", BoolType }, { "Single", FloatType }
-
             };
         }
+
+        //todo: remove return
         public static bool ValidateParams(MethodInfo _methodInfo)
         {
-            return true;
+			foreach (var currentParam in _methodInfo.GetParameters())
+			{
+				if(!_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
+                    throw new FormatException($"Can't parse parameter {currentParam.Name} of type {currentParam.ParameterType.Name} in function {_methodInfo.Name}");
+			}
+			return true;
         }
-            
 
         public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
         {
@@ -28,15 +32,14 @@ namespace Command_Interpreter
             //first, we want to make sure we can match all the paramters that the function requires, which doesn't have to be all of them as some might
             //have default values
             //if not all required paramters are match, throw "not enough params" or something
-			foreach (var currentFunc in _methodInfo.GetParameters())
+			foreach (var currentParam in _methodInfo.GetParameters())
 			{
-				if (_params.TryGetValue(currentFunc.ParameterType.Name, out Delegate? dictionaryFunc))
+				if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
                 {
                     var peich = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
 
                     if(peich != null)
 					    arrayparams.Add(dictionaryFunc);
-
                 }
 			}
 			return arrayparams.ToArray();

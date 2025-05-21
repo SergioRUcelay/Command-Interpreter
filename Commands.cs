@@ -2,7 +2,10 @@
 
 namespace Command_Interpreter
 {
-    public class Commands
+	/// <summary>
+	/// Class that gets the string. It parses it, validates the verb (Delegate), and the parameters.
+	/// </summary>
+	public class Commands
     {
         public static bool terminate = false;
 
@@ -19,24 +22,24 @@ namespace Command_Interpreter
             ErrorFileLog.WriteNoErrorXml();
         }
 
-        /// <summary>
-        /// Retrieves the array on the command line and sorts the Delegate and its parameters.
-        /// </summary>
-        /// <param name="textConsole"></param>
-        public void Command(string verb)
+		/// <summary>
+		/// Retrieves the array on the command line and sorts the Delegate and its parameters.
+		/// </summary>
+		/// <param name="verb">The user's string</param>
+		public void Command(string verb)
         {
             string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
+            // Checks if it's null.
             if (textConsole.Length == 0)
                 return;
-            //try
-            //{
-            // Seeking the function.
+           
+            // Seek the Delegate.
             string command = textConsole[0].ToLower();
             Delegate _CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
 
-            // Seeking parameters. In this case: Int, Float, String, Bool and Array.
-            if (_CalledFunc != null)
+			// Seek the parameters of the Delegate. In this case: Int, Float, String, Bool and Array.
+			if (_CalledFunc != null)
             {
                 MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
 
@@ -66,7 +69,7 @@ namespace Command_Interpreter
             {
 #if DEBUG
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(" Command does not exist");
+                Console.WriteLine("Command does not exist");
 #endif
                 ErrorFileLog.ErrorXmlLogFile(null, "The string does not represent any function");
             }
@@ -105,19 +108,27 @@ namespace Command_Interpreter
             //    ErrorXmlLogFile(stringsformats, "The string parameter needs '-' as a prefix");
             //}
         }
-
+        /// <summary>
+        /// Adds the functions to the Tuple of Delegates.
+        /// </summary>
+        /// <param name="command">The key </param>
+        /// <param name="func"></param>
+        /// <param name="info"></param>
+        /// <exception cref="InvalidOperationException"></exception>
         public void AddFunc(string command, Delegate func, string info)
         {
-            //TODO: check that all parameters in func are parseable by the system
-            
-            bool functionCanBeCalled = Parameters.ValidateParams(func.GetMethodInfo()); // ValidateParams must be implementesd.
-            //if some parameter can't be matched, give a warning to the user
+            //TODO: check that all parameters in func are parseable by the system (Tru ValidateParams func)
+            //if some parameter can't be matched, give a warning to the user. How can we do it?
+            //Checking that function called or parameters exist
+            //Wrap all AddFunc in to TryCach to recover a log string.
 
-            // Checking that functuion called or parameters exist
-			if (tuple_commands.Exists(x => x.name == command) )
+            if (tuple_commands.Exists(x => x.name == command))
                 throw new InvalidOperationException($"Function with name {command} already registered or params not exist");
             else
+            {
+                Parameters.ValidateParams(func.GetMethodInfo());
                 tuple_commands.Add((command, func, info));
+            }
         }
 
         public void RemoveFunc(string name)

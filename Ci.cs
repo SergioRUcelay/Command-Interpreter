@@ -4,7 +4,14 @@ namespace Command_Interpreter
 {
     internal class Ci
     {
-        static public string String(string SQLRequest, string SQLRequest2)
+
+		static public double NoValid(double doubleParam)
+		{
+			Console.WriteLine("Double method have been call");
+			Console.WriteLine(doubleParam + "," + doubleParam);
+			return doubleParam;
+		}
+		static public string String(string SQLRequest, string SQLRequest2)
         {
             Console.WriteLine("String method have been call");
             Console.WriteLine(SQLRequest +"," + SQLRequest2);
@@ -47,5 +54,6 @@ namespace Command_Interpreter
             Console.WriteLine(value.ToString());
             return value;
         }
+
     }
 }
