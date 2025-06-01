@@ -1,7 +1,11 @@
-﻿
+﻿using System.Xml.Serialization;
+
 namespace Command_Interpreter
 {
-    [Serializable]
+    /// <summary>
+    /// Error Class for serielize in XML file.
+    /// </summary>
+    [Serializable, XmlRoot("Error")]
     public class LogError
     {
         public DateTime DateTimeError { get; set; }

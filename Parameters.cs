@@ -14,7 +14,7 @@ namespace Command_Interpreter
             };
         }
 
-        //todo: remove return
+        //TODO: remove return
         public static bool ValidateParams(MethodInfo _methodInfo)
         {
 			foreach (var currentParam in _methodInfo.GetParameters())
@@ -29,20 +29,21 @@ namespace Command_Interpreter
         {
 			int currentToken = 1;
 			List<object> arrayparams = [];
-            //first, we want to make sure we can match all the paramters that the function requires, which doesn't have to be all of them as some might
-            //have default values
-            //if not all required paramters are match, throw "not enough params" or something
+			//first, we want to make sure we can match all the paramters that the function requires, which doesn't have to be all of them as some might
+			//have default values
+			//if not all required paramters are match, throw "not enough params" or something
 			foreach (var currentParam in _methodInfo.GetParameters())
 			{
 				if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
-                {
-                    var peich = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
+				{
+					var peich = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
 
-                    if(peich != null)
-					    arrayparams.Add(dictionaryFunc);
-                }
+					if (peich != null)
+						arrayparams.Add(dictionaryFunc);
+				}
 			}
 			return arrayparams.ToArray();
+		
 		}
 
         public static  int IntType(string _parameter) => int.Parse(_parameter);

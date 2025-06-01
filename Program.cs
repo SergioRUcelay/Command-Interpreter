@@ -10,18 +10,28 @@ string Bool = "Function accepting bool values";
 string IntRest = "Function resta dos numeros dados";
 string DoubleRest = "Function resta dos numeros dados";
 
+try
+{
+    //add try catch to deal with non parsable parameters
+    com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
+    com.AddFunc("String", Ci.String,String);
+    //com.AddFunc("Array", Ci.Array, Array);
+    com.AddFunc("Float", Ci.Float, Float);
+    com.AddFunc("Int", Ci.Int, Int);
+    com.AddFunc("Bool", Ci.Bool, Bool);
+    com.AddFunc("inRest", Ci.IntRest, IntRest);
+    com.AddFunc("Double", Ci.NoValid, DoubleRest);
+    //com.AddFunc("Array", Ci.Array, Array);
 
-//add try catch to deal with non parsable parameters
-com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
-com.AddFunc("String", Ci.String,String);
-//com.AddFunc("Array", Ci.Array, Array);
-com.AddFunc("Float", Ci.Float, Float);
-com.AddFunc("Int", Ci.Int, Int);
-com.AddFunc("Bool", Ci.Bool, Bool);
-com.AddFunc("inRest", Ci.IntRest, IntRest);
-com.AddFunc("Double", Ci.NoValid, DoubleRest);
-//com.AddFunc("Array", Ci.Array, Array);
+}
+catch (FormatException ex)
+{
 
+    Console.WriteLine(ex.Message);
+}
+
+// TODO: Write a unit test for a good call and bad call.
+// Create a function for create a new suported type. Like Double or Vector2.
 
 Console.ForegroundColor = ConsoleColor.DarkGreen;
 Console.WriteLine("Command Interpreter\n Version Alfa-0.1");
