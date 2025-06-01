@@ -11,5 +11,6 @@ namespace Command_Interpreter
 		public DateTime DateTimeLog { get; set; }
 		public string? DelegateCalled { get; set; }
 		public string? Notification { get; set; }
+
 	}
 }

@@ -20,6 +20,7 @@ namespace Command_Interpreter
         {
             tuple_commands.Add(("List", List, list));
             //tuple_commands.Add(("Help", Help, help));
+            Loghandler.SuccessLog();
         }
 
 		/// <summary>
@@ -28,36 +29,40 @@ namespace Command_Interpreter
 		/// <param name="verb">The user's string</param>
 		public string Command(string verb)
         {
-            string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            string[] consoleParameter = [..verb.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)];
+            Delegate? _CalledFunc = null;
 
-			// Checks if it's null. And return to command line if it is true.
-			if (textConsole.Length == 0)
+            // Checks if verb is null. And return to command line if it is true.
+            if (verb == "")
             {
-                return Loghandler.ErrorXmlLog(null, "No function has been called");
-            }
+                Loghandler.ErrorXmlLog(null, "No function has been called.\n");
+                List();
+				return "";
+			}
             else
             {
+                // Separates in two string, one it's the Function and the other are the Parameters
+				string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+				string[] consoleParameter = [.. verb.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)];
+
 				// Seek the Delegate in the list. Command is the first string of the splited array and is therefore supposed to be the function. 
 				string command = textConsole[0].ToLower();
 				try
 				{
-					Delegate _CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
+					_CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
 					MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
-					var function = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, textConsole));
-					return Loghandler.SuccessLog(_CalledFunc);
+					var function = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, consoleParameter));
+					return Loghandler.SuccessCall(_CalledFunc);
 
 				}
 				catch (Exception ex) when (ex is ArgumentNullException || ex is TargetParameterCountException)
 				{
 					if (ex is ArgumentNullException)
-						return Loghandler.ErrorXmlLog(ex, $"The {command} dosen't exist");
+						return Loghandler.ErrorXmlLog(ex, $"The {command} dosen't exist.");
 					if (ex is TargetParameterCountException)
-						return Loghandler.ErrorXmlLog(ex, "The expected number differs from the required number");
+						return Loghandler.ErrorXmlLog(ex, "The expected number differs from the required number.");
 
 				}
-				//return Loghandler.SuccessLog(_CalledFunc);
-				return Loghandler.ErrorXmlLog(null, "No function has been called");
+				return Loghandler.SuccessCall(_CalledFunc);
 			}
 
 		}
@@ -76,7 +81,7 @@ namespace Command_Interpreter
             //Wrap all AddFunc in to TryCach to recover a log string.
 
             if (tuple_commands.Exists(x => x.name == command))
-                throw new InvalidOperationException($"Function with name {command} already registered or params not exist");
+                throw new InvalidOperationException($"Function with name {command} already registered.");
             else
             {
                 Parameters.ValidateParams(func.GetMethodInfo());

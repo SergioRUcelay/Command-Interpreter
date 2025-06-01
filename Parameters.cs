@@ -27,22 +27,32 @@ namespace Command_Interpreter
 
         public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
         {
-			int currentToken = 1;
+			int currentToken = 0;
 			List<object> arrayparams = [];
+            var funcParam = _methodInfo.GetParameters();
 			//first, we want to make sure we can match all the paramters that the function requires, which doesn't have to be all of them as some might
 			//have default values
 			//if not all required paramters are match, throw "not enough params" or something
-			foreach (var currentParam in _methodInfo.GetParameters())
-			{
-				if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
-				{
-					var peich = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
+            
+            if (funcParam.Length == _parameters.Length)
+            {
+                foreach (var currentParam in funcParam)
+                {
+                    if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
+                    {
+                        var peich = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
 
-					if (peich != null)
-						arrayparams.Add(dictionaryFunc);
-				}
-			}
+                        if (peich != null)
+                            arrayparams.Add(dictionaryFunc);
+                    }
+                }
 			return arrayparams.ToArray();
+            }
+            else
+            {
+				Loghandler.ErrorXmlLog(null, "The expected number differs from the required number");
+				return arrayparams.ToArray();// This Array will be null.
+			}
 		
 		}
 
