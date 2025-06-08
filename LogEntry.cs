@@ -20,7 +20,7 @@ namespace Command_Interpreter
 		}
 
 		public LogType? Type { get; set; }
-		public DateTime Timestamp { get; set; }
+		public string? Timestamp { get ; set; }
 		public string? FunctionCalled { get; set; }
 		public string? Message { get; set; }
 		public string? ThrowError { get; set; }

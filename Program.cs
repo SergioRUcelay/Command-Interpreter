@@ -40,7 +40,7 @@ while (!Commands.terminate)
 {
     Console.ForegroundColor = ConsoleColor.White;
     Console.Write("\nCi console..:> ");
-    string? verb = Console.ReadLine();
+	string? verb = Console.ReadLine();
     if (verb != null)
     {
         Console.WriteLine(com.Command(verb));

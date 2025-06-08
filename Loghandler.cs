@@ -1,7 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Xml.Xsl;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Command_Interpreter
 {
@@ -29,7 +32,7 @@ namespace Command_Interpreter
 			LogEntry success = new()
 			{
 				Type = LogEntry.LogType.Success,
-				Timestamp = DateTime.Now,
+				Timestamp = DateTime.Now.ToString("dd/MM/yyyy HH'h':mm'm':ss'sg'"),
 				Message = "Session successfully started."
 				
 			};
@@ -45,7 +48,7 @@ namespace Command_Interpreter
 			LogEntry success = new()
 			{
 				Type = LogEntry.LogType.Success,
-				Timestamp = DateTime.Now,
+				Timestamp = DateTime.Now.ToString("dd/MM/yyyy HH'h':mm'm':ss'sg'"),
 				FunctionCalled = calledfunc.GetMethodInfo().Name.ToString(),
 				Message = "Function has been executed correctly."
 			};
@@ -64,7 +67,7 @@ namespace Command_Interpreter
 			LogEntry newError = new ()
 			{
 				Type = LogEntry.LogType.Error,
-				Timestamp = DateTime.Now,
+				Timestamp = DateTime.Now.ToString("dd/MM/yyyy HH'h':mm'm':ss'sg'"),
 				FunctionCalled = calledfunc.GetMethodInfo().Name.ToString(),
 				Message = error,
 				ThrowError = exception?.Message
@@ -82,7 +85,7 @@ namespace Command_Interpreter
 			LogEntry newError = new ()
 			{
 				Type = LogEntry.LogType.Error,
-				Timestamp = DateTime.Now,
+				Timestamp = DateTime.Now.ToString("dd/MM/yyyy HH'h':mm'm':ss'sg'"),
 				Message = error,
 				ThrowError = exception?.Message,
 				
@@ -91,7 +94,7 @@ namespace Command_Interpreter
 
 		}
 		/// <summary>
-		/// Write in console an error or success menssage when the function is called.
+		/// Create a Xml an error or success menssage when the function is called. 
 		/// </summary>
 		/// <param name="newxmlmenssage">Serializable XmlClass that contain data.</param>
 		/// <returns></returns>
@@ -99,6 +102,9 @@ namespace Command_Interpreter
 		{
 			// Declare the needed variables
 			var _serializerFor_Log = new XmlSerializer(typeof(Log));
+			XslCompiledTransform xslTranslater = new();
+			var xslFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XSLTFile1.xslt");
+			string consoleOutput;
 			Log LogContainer;
 
 			
@@ -116,13 +122,24 @@ namespace Command_Interpreter
 			var updatedLogs = new List<LogEntry>(LogContainer.logEntries) {newxmlmenssage};
 			LogContainer.logEntries = updatedLogs.ToArray();
 
-			WriteToDisk(_serializerFor_Log, LogContainer);
+			//WriteToDisk(_serializerFor_Log, LogContainer);
 
 			using StringWriter writer = new();
-			_serializerFor_Log.Serialize(writer, LogContainer.logEntries);
-			
+			_serializerFor_Log.Serialize(writer, LogContainer);
+
+			// Loads from memory to store new XmlLog in memory throw a variable.
+			using XmlReader xmlMemory = XmlReader.Create(new StringReader(writer.ToString()));
+			// Loads the Xlst file for translate.
+			xslTranslater.Load(xslFile);
+			using (StringWriter texOutput = new())
+			{
+				xslTranslater.Transform(xmlMemory,null, texOutput);
+				consoleOutput = texOutput.ToString();
+
+			}
 			//return menssage;
-			return writer.ToString();
+			return consoleOutput;
+			
 		}
 
 		/// <summary>
@@ -130,19 +147,19 @@ namespace Command_Interpreter
 		/// </summary>
 		/// <param name="log">Serializable class required to write the file</param>
 		/// <param name="menssage">String representing the type of error</param>
-		public static void WriteToDisk(XmlSerializer serializer, Log logE)
-		{
+		//public static void WriteToDisk(XmlSerializer serializer, Log logE)
+		//{
 
-			if (!File.Exists(_logFile))
-			{
-				var _serializerFor_Log = new XmlSerializer(logE.GetType());
-				using var writer = XmlWriter.Create(_logFile, new XmlWriterSettings { Indent = true, NewLineOnAttributes = true });
-				_serializerFor_Log.Serialize(writer, logE);
-			}
-			XmlFop
-			else
-				AddToAnExistingFile(menssage);
-		}
+		//	if (!File.Exists(_logFile))
+		//	{
+		//		var _serializerFor_Log = new XmlSerializer(logE.GetType());
+		//		using var writer = XmlWriter.Create(_logFile, new XmlWriterSettings { Indent = true, NewLineOnAttributes = true });
+		//		_serializerFor_Log.Serialize(writer, logE);
+		//	}
+		//	XmlFop
+		//	else
+		//		AddToAnExistingFile(menssage);
+		//}
 
 		/// <summary>
 		/// Adds log information to an existing file.

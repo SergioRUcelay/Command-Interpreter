@@ -27,7 +27,7 @@ namespace Command_Interpreter
 		/// Retrieves the array on the command line and sorts the Delegate and it's parameters.
 		/// </summary>
 		/// <param name="verb">The user's string</param>
-		public string Command(string verb)
+		public string Command(string? verb)
         {
             Delegate? _CalledFunc = null;
 
