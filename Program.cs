@@ -42,5 +42,13 @@ while (!Commands.terminate)
     Console.Write("\nCi console..:> ");
     string? verb = Console.ReadLine();
     if (verb != null)
-        com.Command(verb);
+    {
+        Console.WriteLine(com.Command(verb));
+    }
+        
+
 }
+
+// TODO: Eliminate the two log class and merge in one.
+// Handle the sintaxis error like: int 2 2/ (that will throw an error)
+// look for other type of Exception that could exist.

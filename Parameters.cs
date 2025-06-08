@@ -40,37 +40,37 @@ namespace Command_Interpreter
                 {
                     if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
                     {
-                        var peich = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
+                        var parseParam = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
 
-                        if (peich != null)
-                            arrayparams.Add(dictionaryFunc);
+                        if (parseParam != null)
+                            arrayparams.Add(parseParam);
                     }
                 }
-			return arrayparams.ToArray();
+			    return arrayparams.ToArray();
             }
             else
             {
-				Loghandler.ErrorXmlLog(null, "The expected number differs from the required number");
 				return arrayparams.ToArray();// This Array will be null.
 			}
+           
 		
 		}
+      
+		public static int IntType(string _parameter) => int.Parse(_parameter);
 
-        public static  int IntType(string _parameter) => int.Parse(_parameter);
+		public static bool BoolType(string _parameter) => bool.Parse(_parameter);
 
-        public static bool BoolType(string _parameter) => bool.Parse(_parameter);
+		public static float FloatType(string _parameter) => float.Parse(_parameter);
 
-        public static float FloatType(string _parameter) => float.Parse(_parameter);
-
-        public static string StringType(string _parameter)
-        {
+		public static string StringType(string _parameter)
+		{
 			string stringtype;
 
 			if (_parameter.Contains('-'))
-                stringtype = _parameter.Trim('-');
-            else throw new FormatException();
-            return stringtype;
-        }
+				stringtype = _parameter.Trim('-');
+			else throw new FormatException();
+			return stringtype;
+		}
 
         public List<object> ArrayType()
         {

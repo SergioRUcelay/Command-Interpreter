@@ -34,9 +34,8 @@ namespace Command_Interpreter
             // Checks if verb is null. And return to command line if it is true.
             if (verb == "")
             {
-                Loghandler.ErrorXmlLog(null, "No function has been called.\n");
-                List();
-				return "";
+                List(); // That will disappear in DLL version.
+				return Loghandler.ErrorXmlLog(null, "No function has been called.\n");;
 			}
             else
             {
@@ -112,8 +111,8 @@ namespace Command_Interpreter
 
             foreach (var command in tuple_commands)
             {
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write($"   " + command.name.PadRight(maxW));
+                //Console.ForegroundColor = ConsoleColor.Blue;
+                Console.Write($"   " + "\x1b[91m" +command.name.PadRight(maxW));
                 Console.ResetColor();
                 Console.WriteLine($" - " + command.info);
             }

@@ -1,11 +1,12 @@
-﻿using System.Reflection;
+﻿using System.Net;
+using System.Reflection;
 using System.Xml;
 using System.Xml.Serialization;
 
 namespace Command_Interpreter
 {
 	/// <summary>
-	/// Class that creates the log file. Where we collect error and problem data.
+	/// Class that creates the log file. Where we collect menssage a success, error and problem data.
 	/// </summary>
 	public static class Loghandler
 	{
@@ -23,14 +24,15 @@ namespace Command_Interpreter
 		/// <summary>
 		/// Create a serializable Xml successfully log class.
 		/// </summary>
-		/// <param name="calledfunc">The name of the executed function</param>
 		public static void SuccessLog()
 		{
-			LogSuccess success = new()
+			LogEntry success = new()
 			{
-				DateTimeLog = DateTime.Now,
-				Notification = "Session successfully started."
-			}; 
+				Type = LogEntry.LogType.Success,
+				Timestamp = DateTime.Now,
+				Message = "Session successfully started."
+				
+			};
 			ConsoleWriteNewXmlString(success);
 		}
 
@@ -38,20 +40,20 @@ namespace Command_Interpreter
 		/// Create a serializable Xml successfully log class.
 		/// </summary>
 		/// <param name="calledfunc">The name of the executed function</param>
-		public static string SuccessCall(Delegate? calledfunc)
+		public static string SuccessCall(Delegate calledfunc)
 		{
-			LogSuccess success = new()
+			LogEntry success = new()
 			{
-				DateTimeLog = DateTime.Now,
-				DelegateCalled = calledfunc.GetMethodInfo().Name.ToString(),
-				Notification = "Function had been executed correctly."
+				Type = LogEntry.LogType.Success,
+				Timestamp = DateTime.Now,
+				FunctionCalled = calledfunc.GetMethodInfo().Name.ToString(),
+				Message = "Function has been executed correctly."
 			};
-			
 			return ConsoleWriteNewXmlString(success);
 		}
 
 		/// <summary>
-		/// Create a serializable Xml error log class.
+		/// Create a serializable Xml error log class, reporting which Function, exception and menssage caused it.
 		/// </summary>
 		/// <param name="exception">Type of exception thown</param>
 		/// <param name="calledfunc">Name of the executed function</param>
@@ -59,49 +61,68 @@ namespace Command_Interpreter
 		/// <returns></returns>
 		public static string ErrorXmlLog(Exception? exception, Delegate calledfunc, string error)
 		{
-			LogError newError = new LogError()
+			LogEntry newError = new ()
 			{
-				ThrowError = exception?.Message,
-				Notification = error,
-				DelegateCalled = calledfunc.GetMethodInfo().Name.ToString(),
-				DateTimeError = DateTime.Now
+				Type = LogEntry.LogType.Error,
+				Timestamp = DateTime.Now,
+				FunctionCalled = calledfunc.GetMethodInfo().Name.ToString(),
+				Message = error,
+				ThrowError = exception?.Message
 			};
 			return ConsoleWriteNewXmlString(newError);
 		}
 
 		/// <summary>
-		/// Create a serializable Xml error log class.
+		/// Create a serializable Xml error log class, reporting which exception and menssage caused it.
 		/// </summary>
 		/// <param name="exception">Type of exception thown</param>
 		/// <param name="error">String describing the type of error</param>
 		public static string ErrorXmlLog(Exception? exception, string error)
 		{
-			LogError newError = new LogError()
+			LogEntry newError = new ()
 			{
+				Type = LogEntry.LogType.Error,
+				Timestamp = DateTime.Now,
+				Message = error,
 				ThrowError = exception?.Message,
-				Notification = error,
-				DateTimeError = DateTime.Now
+				
 			};
-			Console.WriteLine(error);
 			return ConsoleWriteNewXmlString(newError);
 
 		}
 		/// <summary>
-		/// Write in console a error or success menssage when the function is called.
+		/// Write in console an error or success menssage when the function is called.
 		/// </summary>
 		/// <param name="newxmlmenssage">Serializable XmlClass that contain data.</param>
 		/// <returns></returns>
-		public static string ConsoleWriteNewXmlString(object newxmlmenssage)
+		public static string ConsoleWriteNewXmlString(LogEntry newxmlmenssage)
 		{
-			string menssage;
-			using (StringWriter writer = new StringWriter())
+			// Declare the needed variables
+			var _serializerFor_Log = new XmlSerializer(typeof(Log));
+			Log LogContainer;
+
+			
+			if (File.Exists(_logFile))
 			{
-				var _serializerFor_Log = new XmlSerializer(newxmlmenssage.GetType());
-				_serializerFor_Log.Serialize(writer, newxmlmenssage);
-				menssage = writer.ToString();
-				WriteToDisk(newxmlmenssage, menssage);
-				return menssage;
+				using FileStream localXmlFile = new(_logFile, FileMode.Open);
+				LogContainer = _serializerFor_Log.Deserialize(localXmlFile) as Log ?? new Log(); // Recover a file into log's variable or if not exist it'll create it.
 			}
+			else
+			{
+				LogContainer = new Log();
+			}
+
+			// Create a log root class with a List of LogEntry objects, and update it with new XML messages.
+			var updatedLogs = new List<LogEntry>(LogContainer.logEntries) {newxmlmenssage};
+			LogContainer.logEntries = updatedLogs.ToArray();
+
+			WriteToDisk(_serializerFor_Log, LogContainer);
+
+			using StringWriter writer = new();
+			_serializerFor_Log.Serialize(writer, LogContainer.logEntries);
+			
+			//return menssage;
+			return writer.ToString();
 		}
 
 		/// <summary>
@@ -109,14 +130,16 @@ namespace Command_Interpreter
 		/// </summary>
 		/// <param name="log">Serializable class required to write the file</param>
 		/// <param name="menssage">String representing the type of error</param>
-		public static void WriteToDisk(object log, string menssage)
+		public static void WriteToDisk(XmlSerializer serializer, Log logE)
 		{
+
 			if (!File.Exists(_logFile))
 			{
-				var _serializerFor_Log = new XmlSerializer(log.GetType());
-				using (var writer = XmlWriter.Create(_logFile, new XmlWriterSettings { Indent = true, NewLineOnAttributes = true }))
-					_serializerFor_Log.Serialize(writer, log);
+				var _serializerFor_Log = new XmlSerializer(logE.GetType());
+				using var writer = XmlWriter.Create(_logFile, new XmlWriterSettings { Indent = true, NewLineOnAttributes = true });
+				_serializerFor_Log.Serialize(writer, logE);
 			}
+			XmlFop
 			else
 				AddToAnExistingFile(menssage);
 		}
@@ -127,6 +150,7 @@ namespace Command_Interpreter
 		/// <param name="menssage">String representing the type of error</param>
 		public static void AddToAnExistingFile(string menssage)
 		{
+			
 			// Load the existing file.
 			XmlDocument existingLogFile = new();
 			existingLogFile.Load(_logFile);
@@ -141,8 +165,10 @@ namespace Command_Interpreter
 			if (tempLog.DocumentElement != null)
 			{
 				XmlNode xmlNewLogNode = existingLogFile.ImportNode(tempLog.DocumentElement, true); // The ImporNode() method-> Imports a Node of other file, to the current file.
-																										 // Add the new Node to the log file.
+																								   // Add the new Node to the log file.
+				//XmlNode? xmlOldLogNode = existingLogFile.SelectSingleNode("/Logs");
 				existingLogFile?.DocumentElement?.AppendChild(xmlNewLogNode);
+				//xmlOldLogNode.AppendChild(xmlOldLogNode.FirstChild);
 				existingLogFile?.Save(_logFile);
 			}
 		}

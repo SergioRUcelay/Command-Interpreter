@@ -20,7 +20,7 @@ namespace Command_Interpreter
 
         static public int Int(int p, int f)
         {
-            Console.WriteLine("Int method have been call");
+            //Console.WriteLine("Int method have been call");
             Console.WriteLine(p+f);
             return p + f ;
         }
