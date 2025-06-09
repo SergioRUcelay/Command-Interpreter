@@ -13,7 +13,7 @@
 		<xsl:if test="Type">
 			<xsl:text>Type: </xsl:text>
 			<xsl:value-of select="Type"/>
-			<xsl:text>&#10;</xsl:text>
+			<xsl:text> correcto &#10;</xsl:text>
 		</xsl:if>
 
 		<!-- Timestamp -->
@@ -41,6 +41,7 @@
 		<xsl:if test="ThrowError">
 			<xsl:text>ThrowError: </xsl:text>
 			<xsl:value-of select="ThrowError"/>
+			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
 
 		<!-- New line after each entry -->
@@ -53,7 +54,7 @@
 		<xsl:if test="Type">
 			<xsl:text>Type: </xsl:text>
 			<xsl:value-of select="Type"/>
-			<xsl:text>&#10;</xsl:text>
+			<xsl:text>incorrdcto &#10;</xsl:text>
 		</xsl:if>
 
 		<!-- Timestamp -->
@@ -74,7 +75,7 @@
 		<xsl:if test="Message">
 			<xsl:text>Message: </xsl:text>
 			<xsl:value-of select="Message"/>
-			<xsl:text> | </xsl:text>
+			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
 
 		<!-- ThrowError -->
@@ -84,7 +85,7 @@
 		</xsl:if>
 
 		<!-- New line after each entry -->
-		<xsl:text>&#10;</xsl:text>
+		<!-- <xsl:text>&#10;</xsl:text> -->
 	</xsl:template>
 
 </xsl:stylesheet>

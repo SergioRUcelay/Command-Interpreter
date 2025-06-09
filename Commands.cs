@@ -20,19 +20,18 @@ namespace Command_Interpreter
         {
             tuple_commands.Add(("List", List, list));
             //tuple_commands.Add(("Help", Help, help));
-            Loghandler.SuccessLog();
         }
 
 		/// <summary>
 		/// Retrieves the array on the command line and sorts the Delegate and it's parameters.
 		/// </summary>
 		/// <param name="verb">The user's string</param>
-		public string Command(string? verb)
+		public string Command(string verb)
         {
             Delegate? _CalledFunc = null;
 
             // Checks if verb is null. And return to command line if it is true.
-            if (verb == "")
+            if (string.IsNullOrEmpty(verb))
             {
                 List(); // That will disappear in DLL version.
 				return Loghandler.ErrorXmlLog(null, "No function has been called.\n");;
@@ -48,20 +47,24 @@ namespace Command_Interpreter
 				try
 				{
 					_CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
-					MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
-					var function = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, consoleParameter));
-					return Loghandler.SuccessCall(_CalledFunc);
-
+                    if (_CalledFunc is not null)
+                    {
+                        MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
+					    var function = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, consoleParameter));
+					    return Loghandler.SuccessCall(_CalledFunc);
+                    }
+                    else
+					    return Loghandler.ErrorXmlLog(null, $"The \"{command}\" dosen't exist.");
 				}
-				catch (Exception ex) when (ex is ArgumentNullException || ex is TargetParameterCountException)
+				catch (TargetParameterCountException ex)
 				{
-					if (ex is ArgumentNullException)
-						return Loghandler.ErrorXmlLog(ex, $"The {command} dosen't exist.");
-					if (ex is TargetParameterCountException)
-						return Loghandler.ErrorXmlLog(ex, "The expected number differs from the required number.");
-
+					return Loghandler.ErrorXmlLog(ex, "The number of expected parameters differs from the required number.");
 				}
-				return Loghandler.SuccessCall(_CalledFunc);
+                catch (TargetInvocationException ex)
+                {
+                    return Loghandler.ErrorXmlLog(ex, "The strings must be preceded with \"-\".");
+				}
+				
 			}
 
 		}

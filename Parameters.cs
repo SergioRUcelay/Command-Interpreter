@@ -68,8 +68,21 @@ namespace Command_Interpreter
 
 			if (_parameter.Contains('-'))
 				stringtype = _parameter.Trim('-');
-			else throw new FormatException();
+			else throw new FormatException("The strings must be preceded with \"-\".");
 			return stringtype;
+
+			//try
+   //         {
+			//	if (_parameter.Contains('-'))
+			//		stringtype = _parameter.Trim('-');
+			//	else throw new FormatException();
+			//	return stringtype;
+			//}
+   //         catch (FormatException ex)
+   //         {
+   //             return Loghandler.ErrorXmlLog(ex, "The strings must be preceded with \"-\".");
+   //         }
+			
 		}
 
         public List<object> ArrayType()

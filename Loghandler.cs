@@ -1,10 +1,7 @@
-﻿using System;
-using System.Net;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.Xsl;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Command_Interpreter
 {
@@ -80,7 +77,7 @@ namespace Command_Interpreter
 		/// </summary>
 		/// <param name="exception">Type of exception thown</param>
 		/// <param name="error">String describing the type of error</param>
-		public static string ErrorXmlLog(Exception? exception, string error)
+		public static string ErrorXmlLog(Exception? exception, string? error)
 		{
 			LogEntry newError = new ()
 			{
