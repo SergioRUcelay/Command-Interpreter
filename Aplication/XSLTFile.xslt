@@ -1,22 +1,33 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:output method="text"/>
-	<xsl:variable name="colorRed" select="'red'"/>
-
-	<xsl:template match="logEntry">
+	<xsl:output method="text" encoding="UTF-8"/>
+	
+	<!-- Alternative template for root element if it's not LogEntry -->
+	<xsl:template match="*[Type or Timestamp or FunctionCalled or Message or ThrowError]">
+		
+		<!-- Type -->
 		<xsl:choose>
-			<xsl:when test="type = 'Success'">
-				<xsl:text><![CDATA[\x1b[91m]]></xsl:text>
+			<xsl:when test="Type = 'Error'">
+				<xsl:text>\x1b[31m</xsl:text>
+				<!-- Red color -->
+				<xsl:value-of select="Type"/>
+				<xsl:text>\x1b[0m</xsl:text>
+				<xsl:text>&#10;</xsl:text>
+				<!-- Reset color -->
 			</xsl:when>
-			<xsl:when test="type = 'Error'">
-				<xsl:text><![CDATA[\x1b[93m]]"><![CDATA[\x1b[93m]]></xsl:text>
+			<xsl:when test="Type = 'Success'">
+				<xsl:text>\x1b[92m</xsl:text>
+				<!-- Yellow color -->
+				<xsl:value-of select="Type"/>
+				<xsl:text >\x1b[0m</xsl:text>
+				<xsl:text>&#10;</xsl:text>
+				<!-- Reset color -->
 			</xsl:when>
 		</xsl:choose>
 
 		<!-- Timestamp -->
 		<xsl:if test="Timestamp">
-			<xsl:value-of select="$colorRed"/>
-			<xsl:text>peich Timestamp: </xsl:text>
+			<xsl:text>Timestamp: </xsl:text>
 			<xsl:value-of select="Timestamp"/>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
@@ -41,7 +52,5 @@
 			<xsl:value-of select="ThrowError"/>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
-		
-		<!-- newline -->
 	</xsl:template>
 </xsl:stylesheet>

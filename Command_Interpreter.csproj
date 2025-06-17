@@ -8,10 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="XSLTFile1.xslt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="XSLTFile_webOk.xslt">
+    <None Remove="XSLTFile1.xslt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Aplication\XSLTFile.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Command_Interpreter
 {
@@ -19,22 +21,25 @@ namespace Command_Interpreter
         public Commands()
         {
             tuple_commands.Add(("List", List, list));
-            //tuple_commands.Add(("Help", Help, help));
         }
 
 		/// <summary>
 		/// Retrieves the array on the command line and sorts the Delegate and it's parameters.
 		/// </summary>
 		/// <param name="verb">The user's string</param>
-		public string Command(string verb)
+		public CommandReplay Command(string verb)
         {
             Delegate? _CalledFunc = null;
 
             // Checks if verb is null. And return to command line if it is true.
             if (string.IsNullOrEmpty(verb))
             {
-                List(); // That will disappear in DLL version.
-				return Loghandler.ErrorXmlLog(null, "No function has been called.\n");;
+           //     List(); // That will disappear in DLL version.
+				return new()
+				{
+					Type = CommandReplay.LogType.Void,
+					Message = "No function has been called"
+				};//Loghandler.ErrorXmlLog(null, "No function has been called.\n");;
 			}
             else
             {
@@ -51,18 +56,38 @@ namespace Command_Interpreter
                     {
                         MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
 					    var function = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, consoleParameter));
-					    return Loghandler.SuccessCall(_CalledFunc);
-                    }
+					    return new()
+						{
+							Type = CommandReplay.LogType.Success,
+							FunctionCalled = command,
+							Message = "Function has been executed correctly.",
+						};
+					}
                     else
-					    return Loghandler.ErrorXmlLog(null, $"The \"{command}\" dosen't exist.");
+						return new()
+						{
+							Type = CommandReplay.LogType.Void,
+							Message = $"The \"{command}\" doesn't exist."
+						};
+				//	Loghandler.ErrorXmlLog(null, $"The \"{command}\" doesn't exist.");
 				}
 				catch (TargetParameterCountException ex)
 				{
-					return Loghandler.ErrorXmlLog(ex, "The number of expected parameters differs from the required number.");
+                    return new()
+                    {
+                        Type = CommandReplay.LogType.Error,
+                        FunctionCalled = command,
+                        Message = "The number of expected parameters differs from the required number.",
+                    }; 
 				}
                 catch (TargetInvocationException ex)
                 {
-                    return Loghandler.ErrorXmlLog(ex, "The strings must be preceded with \"-\".");
+                    return new()
+					{
+						Type = CommandReplay.LogType.Error,
+						FunctionCalled = command,
+						Message = "The strings must be preceded with \"-\".",
+					};
 				}
 				
 			}
@@ -115,7 +140,7 @@ namespace Command_Interpreter
             foreach (var command in tuple_commands)
             {
                 //Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write($"   " + "\x1b[91m" +command.name.PadRight(maxW));
+                Console.Write($"   " + "\x1b[94m" +command.name.PadRight(maxW));
                 Console.ResetColor();
                 Console.WriteLine($" - " + command.info);
             }
