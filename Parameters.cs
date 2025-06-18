@@ -14,15 +14,13 @@ namespace Command_Interpreter
             };
         }
 
-        //TODO: remove return
-        public static bool ValidateParams(MethodInfo _methodInfo)
+        public static void ValidateParams(MethodInfo _methodInfo)
         {
 			foreach (var currentParam in _methodInfo.GetParameters())
 			{
 				if(!_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
                     throw new FormatException($"Can't parse parameter {currentParam.Name} of type {currentParam.ParameterType.Name} in function {_methodInfo.Name}");
 			}
-			return true;
         }
 
         public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
@@ -49,14 +47,10 @@ namespace Command_Interpreter
 			    return arrayparams.ToArray();
             }
             else
-            {
-				return arrayparams.ToArray();// This Array will be null.
-			}
-           
-		
-		}
-      
-		public static int IntType(string _parameter) => int.Parse(_parameter);
+                throw new TargetParameterCountException();
+        }
+
+        public static int IntType(string _parameter) => int.Parse(_parameter);
 
 		public static bool BoolType(string _parameter) => bool.Parse(_parameter);
 
@@ -70,19 +64,6 @@ namespace Command_Interpreter
 				stringtype = _parameter.Trim('-');
 			else throw new FormatException("The strings must be preceded with \"-\".");
 			return stringtype;
-
-			//try
-   //         {
-			//	if (_parameter.Contains('-'))
-			//		stringtype = _parameter.Trim('-');
-			//	else throw new FormatException();
-			//	return stringtype;
-			//}
-   //         catch (FormatException ex)
-   //         {
-   //             return Loghandler.ErrorXmlLog(ex, "The strings must be preceded with \"-\".");
-   //         }
-			
 		}
 
         public List<object> ArrayType()

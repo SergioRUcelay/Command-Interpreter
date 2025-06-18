@@ -1,4 +1,4 @@
-﻿namespace Command_Interpreter
+﻿namespace Command_Interpreter.Aplication
 {
     internal class Ci
     {

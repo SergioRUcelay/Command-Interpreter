@@ -23,6 +23,14 @@
 				<xsl:text>&#10;</xsl:text>
 				<!-- Reset color -->
 			</xsl:when>
+			<xsl:when test="Type = 'Void'">
+				<xsl:text>\x1b[93m</xsl:text>
+				<!-- Yellow color -->
+				<xsl:value-of select="Type"/>
+				<xsl:text >\x1b[0m</xsl:text>
+				<xsl:text>&#10;</xsl:text>
+				<!-- Reset color -->
+			</xsl:when>
 		</xsl:choose>
 
 		<!-- Timestamp -->

@@ -15,6 +15,9 @@
     <None Update="Aplication\XSLTFile.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Aplication\XSLTFile_HTML.xslt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

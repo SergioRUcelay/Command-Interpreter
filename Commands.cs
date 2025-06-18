@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reflection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Reflection;
 
 namespace Command_Interpreter
 {
@@ -16,7 +14,6 @@ namespace Command_Interpreter
 
         // String for describe the inplement function in the CI.
         private readonly string list = "Function for list all functions of all program";
-        private readonly string help = "The help text of the Command Interpreter";
 
         public Commands()
         {
@@ -27,7 +24,7 @@ namespace Command_Interpreter
 		/// Retrieves the array on the command line and sorts the Delegate and it's parameters.
 		/// </summary>
 		/// <param name="verb">The user's string</param>
-		public CommandReplay Command(string verb)
+		public (CommandReplay, object?) Command(string verb)
         {
             Delegate? _CalledFunc = null;
 
@@ -69,10 +66,9 @@ namespace Command_Interpreter
 							Type = CommandReplay.LogType.Void,
 							Message = $"The \"{command}\" doesn't exist."
 						};
-				//	Loghandler.ErrorXmlLog(null, $"The \"{command}\" doesn't exist.");
 				}
-				catch (TargetParameterCountException ex)
-				{
+				catch (TargetParameterCountException)
+                { 
                     return new()
                     {
                         Type = CommandReplay.LogType.Error,
@@ -80,7 +76,7 @@ namespace Command_Interpreter
                         Message = "The number of expected parameters differs from the required number.",
                     }; 
 				}
-                catch (TargetInvocationException ex)
+                catch (TargetInvocationException)
                 {
                     return new()
 					{
@@ -94,7 +90,7 @@ namespace Command_Interpreter
 
 		}
         /// <summary>
-        /// Adds the functions to the Tuple of Delegates.
+        /// Adds the function to the Tuple of Delegates.
         /// </summary>
         /// <param name="command">The key for the Dictionary or Map</param>
         /// <param name="func">The Function that have been add</param>
@@ -102,11 +98,7 @@ namespace Command_Interpreter
         /// <exception cref="InvalidOperationException"></exception>
         public void AddFunc(string command, Delegate func, string info)
         {
-            //TODO: (DONE) check that all parameters in func are parseable by the system (Tru ValidateParams func)
-            //if some parameter can't be matched, give a warning to the user. How can we do it?
             //Checking that function called or parameters exist
-            //Wrap all AddFunc in to TryCach to recover a log string.
-
             if (tuple_commands.Exists(x => x.name == command))
                 throw new InvalidOperationException($"Function with name {command} already registered.");
             else
@@ -116,7 +108,7 @@ namespace Command_Interpreter
             }
         }
         /// <summary>
-        /// Delete the funtion-Delegate from the tuple.
+        /// Delete the funtion from the tuple.
         /// </summary>
         /// <param name="name">Name function</param>
         /// <exception cref="InvalidOperationException"></exception>
@@ -145,19 +137,5 @@ namespace Command_Interpreter
                 Console.WriteLine($" - " + command.info);
             }
         }
-		///TODO: Call a text file and list it in console. This text file describes how CI works. Could we implemet it, in Spectre-Console?
-		/// <summary>
-		/// Call a string that discribes how CI work and how it can used it
-		/// </summary>
-		public void Help()
-        {
-            Console.WriteLine("Here the help text of the Command Interpreter");
-        }
-
-        public void Help(Delegate values)
-		{
-			Console.WriteLine("Here the help text of the Command Interpreter");
-		}
-
 	}
 }

@@ -3,8 +3,6 @@
 	/// <summary>
 	/// Success Class for serielize in XML file.
 	/// </summary>
-
-
 	public class CommandReplay
 	{
 		public enum LogType
