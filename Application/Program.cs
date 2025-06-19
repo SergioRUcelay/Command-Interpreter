@@ -18,16 +18,16 @@ string _DoubleRest = "Function resta dos numeros dados";
 
 try
 {
-    //add try catch to deal with non parsable parameters
-    com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
-    com.AddFunc("String", Ci.String,_String);
-    //com.AddFunc("Array", Array, Array);
-    com.AddFunc("Float", Ci.Float, _Float);
-    com.AddFunc("Int", Ci.Int, _Int);
-    com.AddFunc("Bool", Ci.Bool, _Bool);
-    com.AddFunc("inRest", Ci.IntRest, _IntRest);
-    com.AddFunc("Double", Ci.NoValid, _DoubleRest);
-    //com.AddFunc("Array", Ci.Array, Array);
+	//add try catch to deal with non parsable parameters
+	com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
+	com.AddFunc("String", Ci.String, _String);
+	//com.AddFunc("Array", Array, Array);
+	com.AddFunc("Float", Ci.Float, _Float);
+	com.AddFunc("Int", Ci.Int, _Int);
+	com.AddFunc("Bool", Ci.Bool, _Bool);
+	com.AddFunc("inRest", Ci.IntRest, _IntRest);
+	com.AddFunc("Double", Ci.NoValid, _DoubleRest);
+	//com.AddFunc("Array", Ci.Array, Array);
 
 }
 catch (FormatException ex)
