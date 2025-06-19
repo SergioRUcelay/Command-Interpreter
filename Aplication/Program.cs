@@ -66,7 +66,7 @@ static async Task ReadWebSocket(WebSocket socket, Commands com)
 		// We save in 'result' what we receive from the WebSocket, as an Array segment of what is in the 'buffer'
 		WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 		string message = Encoding.UTF8.GetString(buffer, 0, result.Count);// We encode a String in UTF8
-		CommandReplay webresult = com.Command(message).Item1;
+		CommandReply webresult = com.Command(message);
 		Console.WriteLine($"Message received: {message}");
 
 		string response = XmlToText(WriterOfNewXmlString(webresult));// Response string
@@ -106,7 +106,7 @@ static string XmlToText(string xml)
 	}
 	return xml.Replace("\\x1b", "\x1b"); // Replace the \x1b with the escape character for color as .NET can not generate escape characters from Xslt.
 }
-static string WriterOfNewXmlString(CommandReplay newxmlmessage)
+static string WriterOfNewXmlString(CommandReply newxmlmessage)
 {
 	// Declare the needed variables
 	var _serializerFor_Log = new XmlSerializer(typeof(Log));
@@ -114,11 +114,11 @@ static string WriterOfNewXmlString(CommandReplay newxmlmessage)
 	Log LogContainer = new();
 
 	StringWriter logEntryWriter = new();
-	XmlSerializer _serializerFor_LogEntry = new(typeof(CommandReplay));
+	XmlSerializer _serializerFor_LogEntry = new(typeof(CommandReply));
 	_serializerFor_LogEntry.Serialize(logEntryWriter, newxmlmessage);
 
 	// Create a log root class with a List of LogEntry objects, and update it with new XML messages.
-	var updatedLogs = new List<CommandReplay>(LogContainer.logEntries) { newxmlmessage };
+	var updatedLogs = new List<CommandReply>(LogContainer.logEntries) { newxmlmessage };
 	LogContainer.logEntries = updatedLogs.ToArray();
 
 	//WriteToDisk(_serializerFor_Log, LogContainer);

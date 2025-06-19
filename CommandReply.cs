@@ -3,13 +3,13 @@
 	/// <summary>
 	/// Success Class for serielize in XML file.
 	/// </summary>
-	public class CommandReplay
+	public class CommandReply
 	{
 		public enum LogType
 		{
 			Success, Error, Void
 		}
-		public CommandReplay()
+		public CommandReply()
 		{
 			Timestamp = DateTime.Now;
 		}

@@ -24,7 +24,7 @@ namespace Command_Interpreter
 		/// Retrieves the array on the command line and sorts the Delegate and it's parameters.
 		/// </summary>
 		/// <param name="verb">The user's string</param>
-		public (CommandReplay, object?) Command(string verb)
+		public CommandReply Command(string verb)
         {
             Delegate? _CalledFunc = null;
 
@@ -34,7 +34,7 @@ namespace Command_Interpreter
            //     List(); // That will disappear in DLL version.
 				return new()
 				{
-					Type = CommandReplay.LogType.Void,
+					Type = CommandReply.LogType.Void,
 					Message = "No function has been called"
 				};//Loghandler.ErrorXmlLog(null, "No function has been called.\n");;
 			}
@@ -55,7 +55,7 @@ namespace Command_Interpreter
 					    var function = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, consoleParameter));
 					    return new()
 						{
-							Type = CommandReplay.LogType.Success,
+							Type = CommandReply.LogType.Success,
 							FunctionCalled = command,
 							Message = "Function has been executed correctly.",
 						};
@@ -63,7 +63,7 @@ namespace Command_Interpreter
                     else
 						return new()
 						{
-							Type = CommandReplay.LogType.Void,
+							Type = CommandReply.LogType.Void,
 							Message = $"The \"{command}\" doesn't exist."
 						};
 				}
@@ -71,7 +71,7 @@ namespace Command_Interpreter
                 { 
                     return new()
                     {
-                        Type = CommandReplay.LogType.Error,
+                        Type = CommandReply.LogType.Error,
                         FunctionCalled = command,
                         Message = "The number of expected parameters differs from the required number.",
                     }; 
@@ -80,7 +80,7 @@ namespace Command_Interpreter
                 {
                     return new()
 					{
-						Type = CommandReplay.LogType.Error,
+						Type = CommandReply.LogType.Error,
 						FunctionCalled = command,
 						Message = "The strings must be preceded with \"-\".",
 					};
