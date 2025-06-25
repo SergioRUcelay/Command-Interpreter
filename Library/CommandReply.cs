@@ -14,6 +14,7 @@
 			Timestamp = DateTime.Now;
 		}
 
+		public string Return = string.Empty;
 		public LogType Type { get; set; }
 		public DateTime Timestamp { get ; set; }
 		public string? FunctionCalled { get; set; }

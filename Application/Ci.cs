@@ -21,15 +21,14 @@
             return p + f;
         }
 
-        static public int IntRest(int p)
+        static public void IntRest(int p)
         {
-            Console.WriteLine(p);
-            return p;
+            
         }
 
         static public int[] Array(int[] code)
         {
-            Console.WriteLine(code);
+            //Console.WriteLine(code);
             foreach (int i in code)
             {
                 Console.WriteLine(i);

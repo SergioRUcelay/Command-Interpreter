@@ -2,7 +2,10 @@
 
 namespace Command_Interpreter
 {
-    internal class Parameters
+	/// <summary>
+	/// This class handles parameters. It receives an array of strings, compares them with parameter type maps, and parses them to their appropriate types.
+	/// </summary>
+	internal class Parameters
     {
         private static readonly Dictionary<string, Delegate> _params;
 
@@ -10,10 +13,15 @@ namespace Command_Interpreter
         {
             _params = new Dictionary<string, Delegate>()
             {
-                { "Int32", IntType }, { "String", StringType }, { "Boolean", BoolType }, { "Single", FloatType }
+                { "Int32", IntType }, { "String", StringType }, { "Boolean", BoolType }, { "Single", FloatType }, {"Int32[]", ArrayIntType}
             };
         }
 
+        /// <summary>
+        /// Ensure that the parameters can be parsed by looking in parameters dictionary to see if the type exist.
+        /// </summary>
+        /// <param name="_methodInfo">The method that contains the parameters to compare.</param>
+        /// <exception cref="FormatException"></exception>
         public static void ValidateParams(MethodInfo _methodInfo)
         {
 			foreach (var currentParam in _methodInfo.GetParameters())
@@ -23,15 +31,19 @@ namespace Command_Interpreter
 			}
         }
 
+        /// <summary>
+        /// Look for the parameters in the array. If they exist, parse them to the correct type.
+        /// </summary>
+        /// <param name="_methodInfo"> The function that contains the parameter to look for. </param>
+        /// <param name="_parameters"> The array that contains the strings that match with the parameter type. </param>
+        /// <returns> The array with the parameters. </returns>
+        /// <exception cref="TargetParameterCountException"></exception>
         public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
         {
 			int currentToken = 0;
 			List<object> arrayparams = [];
             var funcParam = _methodInfo.GetParameters();
-			//first, we want to make sure we can match all the paramters that the function requires, which doesn't have to be all of them as some might
-			//have default values
-			//if not all required paramters are match, throw "not enough params" or something
-            
+	            
             if (funcParam.Length == _parameters.Length)
             {
                 foreach (var currentParam in funcParam)
@@ -39,73 +51,71 @@ namespace Command_Interpreter
                     if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
                     {
                         var parseParam = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
-
                         if (parseParam != null)
                             arrayparams.Add(parseParam);
                     }
+
                 }
 			    return arrayparams.ToArray();
             }
             else
                 throw new TargetParameterCountException();
         }
+		/// <summary>
+		/// The method that pases the int type.
+		/// </summary>
+		/// <param name="_parameter"> The string to parse to the int type. </param>
+		/// <returns> The string that matches the int type. </returns>
+		public static int IntType(string _parameter) => int.Parse(_parameter);
 
-        public static int IntType(string _parameter) => int.Parse(_parameter);
-
-		public static bool BoolType(string _parameter) => bool.Parse(_parameter);
+		/// <summary>
+		/// The method that pases the float type.
+		/// </summary>
+		/// <param name="_parameter"> The string to parse to the float type. </param>
+		/// <returns> The string that matches the float type. </returns>
 
 		public static float FloatType(string _parameter) => float.Parse(_parameter);
+		/// <summary>
+		/// The method that pases the bool type.
+		/// </summary>
+		/// <param name="_parameter"> The string to parse to the bool type. </param>
+		/// <returns> The string that matches the bool type. </returns>
+		public static bool BoolType(string _parameter) => bool.Parse(_parameter);
 
+		/// <summary>
+		/// The method that ensures that the strings have the correct written form.
+		/// </summary>
+		/// <param name="_parameter"> The string that matches the string type. </param>
+		/// <returns> The string. </returns>
+		/// <exception cref="FormatException"></exception>
 		public static string StringType(string _parameter)
 		{
 			string stringtype;
 
-			if (_parameter.Contains('-'))
-				stringtype = _parameter.Trim('-');
-			else throw new FormatException("The strings must be preceded with \"-\".");
-			return stringtype;
+            if (_parameter.Contains('-'))
+                stringtype = _parameter.Trim('-');
+            else throw new FormatException("The strings must be preceded with \"-\".");
+
+            return stringtype;
 		}
 
-        public List<object> ArrayType()
+        public static int[] ArrayIntType(string _parameter)
         {
-            List<object> arraytype = [];
-            return arraytype;
+            List<int> returnArraytype = [];
+            //int[] arraytype = [];
+			if (_parameter.Contains('[') && _parameter.Contains(']') && !_parameter.Contains('.') && !_parameter.Contains(' '))
+            {
+                var stringArray = _parameter.Replace("[", "").Replace("]", "").Replace(".", ",");
+                var arraytype = stringArray.Split(',');
+                for (int i = 0; i <= arraytype.Length - 1; i++)
+                {
+                    var converttoint = IntType(arraytype[i]);
+                    returnArraytype.Add(converttoint);
+                }
+            }else throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \"','\".");
+
+			return returnArraytype.ToArray();
         }
-        //    else if (param.ParameterType.IsArray)
-        //    {
-        //        string newtype = "";
-        //        foreach (var item in textConsole[currentToken])
-        //        {
-        //            if (item != '[' && item != ']')
-        //            {
-        //                newtype += item;
-        //            }
-        //        }
-
-        //        var newarray = newtype.Split(',');
-
-        //        if (param.ParameterType == typeof(int[]))
-        //        {
-        //            List<int> ints = [];
-        //            for (int i = 0; i < (newarray.Length); i++)
-        //            {
-        //                if (param.ParameterType == typeof(int[]))
-        //                    ints.Add(int.Parse(newarray[i]));
-        //            }
-        //            ps.Add(ints.ToArray());
-
-        //        }
-
-        //        if (param.ParameterType == typeof(float[]))
-        //        {
-        //            List<float> floats = [];
-        //            for (int i = 0; i < (newarray.Length); i++)
-        //            {
-        //                if (param.ParameterType == typeof(float[]))
-        //                    floats.Add(float.Parse(newarray[i]));
-        //            }
-        //            ps.Add(floats.ToArray());
-        //        }
-        //    }
+       
     }
 }

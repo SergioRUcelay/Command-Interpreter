@@ -8,7 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="XSLTFile1.xslt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Library\Command_Interpreter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="XSLTFile.xslt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="XSLTFile_HTML.xslt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -400,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 /XSLTFile1.xslt
+Application/XSLTFile1.xslt

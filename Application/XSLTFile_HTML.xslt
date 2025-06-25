@@ -2,7 +2,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="UTF-8" indent="yes"/>
 
-	<xsl:template match="*[Type or Timestamp or FunctionCalled or Message or ThrowError]">
+	<xsl:template match="*[Type or Return or Timestamp or FunctionCalled or Message or ThrowError]">
 		<div style="margin-bottom: 1em; font-family: monospace;">
 
 			<!-- Type -->
@@ -29,6 +29,14 @@
 					</div>
 				</xsl:when>
 			</xsl:choose>
+
+			<!-- Return -->
+			<xsl:if test="Return">
+				<div style="color: blue;">
+					<strong>Return:</strong>
+					<xsl:value-of select="Return"/>
+				</div>
+			</xsl:if>
 
 			<!-- Timestamp -->
 			<xsl:if test="Timestamp">

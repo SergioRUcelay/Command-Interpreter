@@ -3,7 +3,7 @@
 	<xsl:output method="text" encoding="UTF-8"/>
 	
 	<!-- Alternative template for root element if it's not LogEntry -->
-	<xsl:template match="*[Type or Timestamp or FunctionCalled or Message or ThrowError]">
+	<xsl:template match="*[Type or Return or Timestamp or FunctionCalled or Message or ThrowError]">
 		
 		<!-- Type -->
 		<xsl:choose>
@@ -32,6 +32,13 @@
 				<!-- Reset color -->
 			</xsl:when>
 		</xsl:choose>
+		
+		<!-- Return -->
+		<xsl:if test="Return">
+			<xsl:text>Return: </xsl:text>
+			<xsl:value-of select="Return"/>
+			<xsl:text>&#10;</xsl:text>
+		</xsl:if>
 
 		<!-- Timestamp -->
 		<xsl:if test="Timestamp">
