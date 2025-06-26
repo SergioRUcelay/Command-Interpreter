@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Xml.Linq;
 
 namespace Command_Interpreter
 {
@@ -51,7 +50,6 @@ namespace Command_Interpreter
 
 				try
 				{
-
                     if (!ValidateFunction(command))
                         throw new Exception();
 
@@ -60,7 +58,18 @@ namespace Command_Interpreter
                     {
                         MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
                         var functionReply = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, consoleParameter));
-                        if (functionReply is not null)
+                        if (functionReply is CommandReply reply && functionReply is not null)
+                        {
+							return (new CommandReply
+							{
+                                ListFunctions = reply.ListFunctions,
+								Return = functionReply.ToString() ?? string.Empty,
+								Type = CommandReply.LogType.Success,
+								FunctionCalled = command,
+								Message = "Function has been executed correctly.",
+							});
+						}
+                        else if(functionReply is not null)
                         {
                             return (new CommandReply
                             {
@@ -162,6 +171,11 @@ namespace Command_Interpreter
             }
         }
 
+        /// <summary>
+        /// Validates whether the specified command exists in the predefined list of commands.
+        /// </summary>
+        /// <param name="command">The command to validate. This value is case-insensitive.</param>
+        /// <returns><see langword="true"/> if the command exists in the list; otherwise, <see langword="false"/>.</returns>
         public bool ValidateFunction(string command)
         {
             if (tuple_commands.Exists(x => x.name.ToLower() == command.ToLower()))
@@ -171,10 +185,11 @@ namespace Command_Interpreter
         }
 
 		/// <summary>
-		/// Lists all added functions and outputs them to the console.
-		/// </summary>
-        // TODO: The function must return a CommandReply class.
-		public void List()
+        /// Displays a formatted list of commands and their descriptions in the console.
+        /// </summary>
+        /// <remarks>Each command name is displayed in a formatted style, followed by its description. 
+        /// The command names are aligned to ensure a consistent appearance.</remarks>
+		public void ConsoleList()
         {
             int maxW = tuple_commands.Max(command => command.name.Length);
 
@@ -185,6 +200,24 @@ namespace Command_Interpreter
                 Console.ResetColor();
                 Console.WriteLine($" - " + command.info);
             }
+        }
+
+        /// <summary>
+        /// Retrieves a list of available commands and their associated information.
+        /// </summary>
+        /// <remarks>The returned <see cref="CommandReply"/> includes a list of tuples, where each tuple
+        /// contains the name of a command and its corresponding information. This method is useful for discovering the
+        /// available commands and their details.</remarks>
+        /// <returns>A <see cref="CommandReply"/> object containing a collection of command names and their descriptions.</returns>
+        public CommandReply List()
+        {
+            CommandReply replay = new();
+
+            foreach (var command in tuple_commands)
+            {
+                replay.ListFunctions.Add((command.name, command.info));
+            }
+            return replay;
         }
 	}
 }

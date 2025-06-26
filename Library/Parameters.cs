@@ -73,8 +73,8 @@ namespace Command_Interpreter
 		/// </summary>
 		/// <param name="_parameter"> The string to parse to the float type. </param>
 		/// <returns> The string that matches the float type. </returns>
-
 		public static float FloatType(string _parameter) => float.Parse(_parameter);
+
 		/// <summary>
 		/// The method that pases the bool type.
 		/// </summary>
@@ -82,12 +82,12 @@ namespace Command_Interpreter
 		/// <returns> The string that matches the bool type. </returns>
 		public static bool BoolType(string _parameter) => bool.Parse(_parameter);
 
-		/// <summary>
-		/// The method that ensures that the strings have the correct written form.
-		/// </summary>
-		/// <param name="_parameter"> The string that matches the string type. </param>
-		/// <returns> The string. </returns>
-		/// <exception cref="FormatException"></exception>
+        /// <summary>
+        /// Extracts the string value by removing the leading hyphen ('-') from the specified parameter.
+        /// </summary>
+        /// <param name="_parameter">The input string, which must begin with a hyphen ('-').</param>
+        /// <returns>A string with the leading hyphen removed from the input parameter.</returns>
+        /// <exception cref="FormatException">Thrown if the input string does not contain a leading hyphen ('-').</exception>
 		public static string StringType(string _parameter)
 		{
 			string stringtype;
@@ -99,10 +99,18 @@ namespace Command_Interpreter
             return stringtype;
 		}
 
+        /// <summary>
+        /// Converts a string representation of an array of integers into an actual integer array.
+        /// </summary>
+        /// <param name="_parameter">A string containing the array of integers, formatted as a comma-separated list enclosed in square brackets
+        /// (e.g., "[1,2,3]"). The string must not contain spaces or periods.</param>
+        /// <returns>An array of integers parsed from the input string.</returns>
+        /// <exception cref="FormatException">Thrown if the input string is not properly formatted. The string must be enclosed in square brackets ("[ ]")
+        /// and the elements must be separated by commas (",") without spaces or periods.</exception>
         public static int[] ArrayIntType(string _parameter)
         {
             List<int> returnArraytype = [];
-            //int[] arraytype = [];
+
 			if (_parameter.Contains('[') && _parameter.Contains(']') && !_parameter.Contains('.') && !_parameter.Contains(' '))
             {
                 var stringArray = _parameter.Replace("[", "").Replace("]", "").Replace(".", ",");

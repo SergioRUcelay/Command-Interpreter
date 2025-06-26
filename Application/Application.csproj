@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Remove="XSLTFile1.xslt" />
+    <None Remove="XSLTFile_HTML.xslt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,7 +20,7 @@
     <None Update="XSLTFile.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="XSLTFile_HTML.xslt">
+    <None Update="XSL_HTMLTFile.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

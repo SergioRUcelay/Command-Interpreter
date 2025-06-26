@@ -401,3 +401,4 @@ FodyWeavers.xsd
 
 /XSLTFile1.xslt
 Application/XSLTFile1.xslt
+/Application/XSLTFile_HTML.xslt

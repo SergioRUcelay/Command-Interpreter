@@ -94,7 +94,7 @@ static async Task ReadWebSocket(WebSocket socket, Commands com)
 static string XmlToText(string xml)
 {
 	XslCompiledTransform xslTranslater = new();
-	var xslFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XSLTFile_HTML.xslt");
+	var xslFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XSL_HTMLTFile.xslt");
 	xslTranslater.Load(xslFile);
 	using (StringWriter texOutput = new())
 	{
@@ -127,8 +127,3 @@ static string WriterOfNewXmlString(CommandReply newxmlmessage)
 	consoleOutput = writer.ToString();
 	return consoleOutput;
 }
-
-
-// TODO: Eliminate the two log class and merge in one.
-// Handle the sintaxis error like: int 2 2/ (that will throw an error)
-// look for other type of Exception that could exist.

@@ -2,7 +2,18 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="UTF-8" indent="yes"/>
 
-	<xsl:template match="*[Type or Return or Timestamp or FunctionCalled or Message or ThrowError]">
+	<xsl:template match="/">
+		<html>
+			<head>
+				<title>Command Logs</title>
+			</head>
+			<body>
+				<xsl:apply-templates select="//CommandReplay"/>
+			</body>
+		</html>
+	</xsl:template>
+
+	<xsl:template match="CommandReplay">
 		<div style="margin-bottom: 1em; font-family: monospace;">
 
 			<!-- Type -->
@@ -70,6 +81,22 @@
 				</div>
 			</xsl:if>
 
+			<!-- List Functions -->
+			<xsl:if test="ListFunctions">
+				<div>
+					<strong>Available Functions:</strong>
+					<ul>
+						<xsl:for-each select="ListFunctions/ValueTupleOfStringString">
+							<li>
+								<strong>
+									<xsl:value-of select="Item1"/>:
+								</strong>
+								<xsl:value-of select="Item2"/>
+							</li>
+						</xsl:for-each>
+					</ul>
+				</div>
+			</xsl:if>
 		</div>
 	</xsl:template>
 </xsl:stylesheet>

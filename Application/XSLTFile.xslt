@@ -3,7 +3,7 @@
 	<xsl:output method="text" encoding="UTF-8"/>
 	
 	<!-- Alternative template for root element if it's not LogEntry -->
-	<xsl:template match="*[Type or Return or Timestamp or FunctionCalled or Message or ThrowError]">
+	<xsl:template match="*[Type or Return or Function or Description or Timestamp or FunctionCalled or Message or ThrowError]">
 		
 		<!-- Type -->
 		<xsl:choose>
@@ -17,7 +17,7 @@
 			</xsl:when>
 			<xsl:when test="Type = 'Success'">
 				<xsl:text>\x1b[92m</xsl:text>
-				<!-- Yellow color -->
+				<!-- Blue color -->
 				<xsl:value-of select="Type"/>
 				<xsl:text >\x1b[0m</xsl:text>
 				<xsl:text>&#10;</xsl:text>
@@ -32,6 +32,15 @@
 				<!-- Reset color -->
 			</xsl:when>
 		</xsl:choose>
+		
+		<!-- Function and Description-->
+		<xsl:if test="Function">
+			<xsl:text>\x1b[92m</xsl:text>
+			<xsl:value-of select="Function"/>
+			<xsl:text>: </xsl:text>
+			<xsl:value-of select="Description"/>
+			<xsl:text>&#10;</xsl:text>
+		</xsl:if>
 		
 		<!-- Return -->
 		<xsl:if test="Return">
