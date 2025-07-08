@@ -21,7 +21,7 @@
             return p + f;
         }
 
-        static public void IntRest(int p)
+        static public void IntRest(int p = default)
         {
             
         }
@@ -35,10 +35,10 @@
             }
             return code;
         }
-        static public float Float(float code)//, Vector2 er)
+        static public float Float(float a, float b)//, Vector2 er)
         {
-            Console.WriteLine(code);
-            return code;
+            Console.WriteLine(a + b);
+            return a + b;
         }
         static public bool Bool(bool value)
         {

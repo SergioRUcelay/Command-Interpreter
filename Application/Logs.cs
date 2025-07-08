@@ -5,7 +5,7 @@ namespace Command_Interpreter.Aplication
 	[Serializable, XmlRoot("Logs")]
 	public class Log
 	{
-		[XmlElement("CommandReplay")]
+		[XmlElement("CommandReply")]
 		public CommandReply[] logEntries { get; set; } = [];
 	}
 }

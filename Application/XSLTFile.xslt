@@ -52,7 +52,8 @@
 		<!-- Timestamp -->
 		<xsl:if test="Timestamp">
 			<xsl:text>Timestamp: </xsl:text>
-			<xsl:value-of select="Timestamp"/>
+			<xsl:value-of select="concat(substring(Timestamp, 6, 2), '/', substring(Timestamp, 9, 2), '/', substring(Timestamp, 1, 4), ' ',
+					substring(Timestamp, 12, 2), 'h:', substring(Timestamp, 15, 2), 'm:',substring(Timestamp, 18, 2),'s')"/>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
 

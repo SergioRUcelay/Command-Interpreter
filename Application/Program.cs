@@ -8,13 +8,13 @@ using System.Xml.Serialization;
 using System.Xml.Xsl;
 
 Commands com = new();
-string _Int = "Function accepting int numbers";
-string _String = "Function accepting string chains";
-string _Array = "Function accepting Arrays of int";
-string _Float = "Function accepting float numbers";
-string _Bool = "Function accepting bool values";
-string _IntRest = "Function resta dos numeros dados";
-string _DoubleRest = "Function resta dos numeros dados";
+string _Int			= "Function accepting int numbers";
+string _String		= "Function accepting string chains";
+string _Array		= "Function accepting Arrays of int";
+string _Float		= "Function accepting float numbers";
+string _Bool		= "Function accepting bool values";
+string _IntRest		= "Function resta dos numeros dados";
+string _DoubleRest	= "Function resta dos numeros dados";
 
 try
 {
@@ -55,6 +55,7 @@ while (true)
 	}
 }
 
+
 // Method for handling the Byte string that reaches us through the webSocket
 static async Task ReadWebSocket(WebSocket socket, Commands com)
 {
@@ -62,12 +63,14 @@ static async Task ReadWebSocket(WebSocket socket, Commands com)
 	while (socket.State == WebSocketState.Open) // As long as the websocket is open.
 	{
 		// We save in 'result' what we receive from the WebSocket, as an Array segment of what is in the 'buffer'
-		WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-		string message = Encoding.UTF8.GetString(buffer, 0, result.Count);// We encode a String in UTF8
-		CommandReply webresult = com.Command(message);
-		Console.WriteLine($"Message received: {message}");
+		WebSocketReceiveResult webCommand = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+		string command = Encoding.UTF8.GetString(buffer, 0, webCommand.Count);// We encode a String in UTF8
 
-		string response = XmlToText(WriterOfNewXmlString(webresult));// Response string
+		CommandReply result = com.Command(command);
+		Console.WriteLine($"Message received: {command}");
+		
+		string xmlOutput = WriterOfNewXmlString(result);
+		string response =  XmlToText(xmlOutput);// Response string
 		byte[] responseBytes = Encoding.UTF8.GetBytes(response); // Conversion of String to Array of Bytes
 		await socket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None); // Enviamos la respuesta.
 	}
@@ -104,26 +107,33 @@ static string XmlToText(string xml)
 	}
 	return xml.Replace("\\x1b", "\x1b"); // Replace the \x1b with the escape character for color as .NET can not generate escape characters from Xslt.
 }
-static string WriterOfNewXmlString(CommandReply newxmlmessage)
+static string WriterOfNewXmlString<T>(T newxmlmessage)
 {
 	// Declare the needed variables
-	var _serializerFor_Log = new XmlSerializer(typeof(Log));
+	//var _serializerFor_Log = new XmlSerializer(typeof(Log));
 	string consoleOutput;
-	Log LogContainer = new();
+	//Log LogContainer = new();
 
 	StringWriter logEntryWriter = new();
-	XmlSerializer _serializerFor_LogEntry = new(typeof(CommandReply));
-	_serializerFor_LogEntry.Serialize(logEntryWriter, newxmlmessage);
+	XmlSerializer _serializerFor_LogEntry = new(typeof(T));
+	//try
+	//{
+		_serializerFor_LogEntry.Serialize(logEntryWriter, newxmlmessage);
+	//}
+	//catch (Exception ex)
+	//{
+	//	Console.WriteLine(ex.ToString());
+	//}
 
 	// Create a log root class with a List of LogEntry objects, and update it with new XML messages.
-	var updatedLogs = new List<CommandReply>(LogContainer.logEntries) { newxmlmessage };
-	LogContainer.logEntries = updatedLogs.ToArray();
+//	var updatedLogs = new List<T>(LogContainer.logEntries) { newxmlmessage };
+	//LogContainer.logEntries = updatedLogs.ToArray();
 
 	//WriteToDisk(_serializerFor_Log, LogContainer);
 
-	using StringWriter writer = new();
-	_serializerFor_Log.Serialize(writer, LogContainer);
+	//using StringWriter writer = new();
+	//_serializerFor_Log.Serialize(writer, LogContainer);
 
-	consoleOutput = writer.ToString();
+	consoleOutput = logEntryWriter.ToString();
 	return consoleOutput;
 }

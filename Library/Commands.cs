@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using Microsoft.VisualBasic.FileIO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Command_Interpreter
 {
@@ -10,14 +12,14 @@ namespace Command_Interpreter
         public static bool terminate = false;
 
         // Function container.
-        private readonly List<(string name, Delegate func, string info)> tuple_commands = [];
+        private readonly List<(string name, List<Delegate> func, string info)> tuple_commands = new();
 
         // This is a string that describes the List function.
         private readonly string list = "Function for list all functions of all program";
 
         public Commands()
         {
-            tuple_commands.Add(("List", List, list));
+            tuple_commands.Add(("List", new List<Delegate>{ List }, list));
         }
 
 		/// <summary>
@@ -27,113 +29,106 @@ namespace Command_Interpreter
 		/// <returns></returns>
 		public CommandReply Command(string verb)
         {
-            Delegate? _CalledFunc = null;
-
             // Checks if verb is null. And return a error message if it is null.
             if (string.IsNullOrEmpty(verb))
             {
-                return (new CommandReply 
+                return (new CommandReply
                 {
                     Type = CommandReply.LogType.Void,
                     Message = "No function has been called"
                 });
-			}
-			// Search for the Delegate in the list. Command is the first string of the split array and is therefore supposed to be the function.
-			else
+            }
+            // Search for the Delegate in the list. Command is the first string of the split array and is therefore supposed to be the function.
+
+            // Create an array of strings from a console string.
+            string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            // This is the array of the parameters.
+            string[] consoleParameter = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).ToArray();
+			// This is a string that contains the name of a function.
+			string command = textConsole[0].ToLower();
+			try
 			{
-                // Create an array of strings from a console string.
-				string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                // This is the array of the parameters.
-				string[] consoleParameter = [.. verb.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1)];
-				// This is a string that contains the name of a function.
-				string command = textConsole[0].ToLower();
+                if (!ValidateFunction(command))
+                    throw new Exception();
 
-				try
-				{
-                    if (!ValidateFunction(command))
-                        throw new Exception();
+				List<Delegate> _CalledFunc = tuple_commands.Find(entry => entry.name.ToLower() == command).func;
 
-					_CalledFunc = tuple_commands.Find(func => func.name.ToLower() == command).func;
-                    if (_CalledFunc is not null)
+                if (_CalledFunc is not null)
+                {
+                    foreach (Delegate del in _CalledFunc)
                     {
-                        MethodInfo methodInfo = _CalledFunc.GetMethodInfo();
-                        var functionReply = methodInfo.Invoke(_CalledFunc.Target, Parameters.SeekParams(methodInfo, consoleParameter));
-                        if (functionReply is CommandReply reply && functionReply is not null)
+                        //find if any delegate has the same number of parameters as the incoming string array (thhe parsed parameters from the command line)
+                        //do the usual :)
+                        MethodInfo methodInfo = del.GetMethodInfo();
+                        object[] parameters;
+                        try
                         {
-							return (new CommandReply
-							{
-                                ListFunctions = reply.ListFunctions,
-								Return = functionReply.ToString() ?? string.Empty,
-								Type = CommandReply.LogType.Success,
-								FunctionCalled = command,
-								Message = "Function has been executed correctly.",
-							});
-						}
-                        else if(functionReply is not null)
+                            parameters = Parameters.SeekParams(methodInfo, consoleParameter);
+                        }
+                        catch (TargetParameterCountException ex)
                         {
-                            return (new CommandReply
-                            {
-                                Return = functionReply.ToString() ?? string.Empty,
-                                Type = CommandReply.LogType.Success,
-                                FunctionCalled = command,
-                                Message = "Function has been executed correctly.",
-                            });
-						}
-						else
+                            continue;
+                        }
+
+                        var functionReply = methodInfo.Invoke(del.Target, parameters);
+
+
+                        //               if (functionReply is CommandReply reply && functionReply is not null)
+                        //               {
+                        return (new CommandReply
                         {
-							return (new CommandReply
-							{
-								Type = CommandReply.LogType.Success,
-								FunctionCalled = command,
-								Message = "Function has been executed correctly.",
-							});
-						}
-					}
-                    else
-						return (new CommandReply
-                        {
-                            Type = CommandReply.LogType.Void,
-                            Message = $"The \"{command}\" doesn't exist.",
+                            //   ListFunctions = reply.ListFunctions,
+                            Return = functionReply,//.ToString() ?? string.Empty,
+                            Type = CommandReply.LogType.Success,
+                            FunctionCalled = command,
+                            Message = "Function has been executed correctly.",
                         });
-				}
-				catch (TargetParameterCountException)
+                    }
+                    //TODO: return better info of the error, so in this case, there is a funcion or functions but they don't have the right number of parameters
+                    throw new TargetParameterCountException("Can't find function with N parameter number");
+                }
+                else
+                    return (new CommandReply
+                    {
+                        Type = CommandReply.LogType.Void,
+                        Message = $"The \"{command}\" doesn't exist.",
+                    });
+                  }
+			catch (TargetParameterCountException)
+            {
+                return (new CommandReply
+                {
+                    Type = CommandReply.LogType.Error,
+                    FunctionCalled = command,
+                    Message = "The number of expected parameters differs from the required number.",
+                });
+			}
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException is not null)
                 {
                     return (new CommandReply
                     {
                         Type = CommandReply.LogType.Error,
                         FunctionCalled = command,
-                        Message = "The number of expected parameters differs from the required number.",
+                        Message = ex.InnerException.Message,
                     });
-				}
-                catch (TargetInvocationException ex)
+                }
+                else return (new CommandReply
                 {
-                    if (ex.InnerException is not null)
-                    {
-                        return (new CommandReply
-                        {
-                            Type = CommandReply.LogType.Error,
-                            FunctionCalled = command,
-                            Message = ex.InnerException.Message,
-                        });
-                    }
-                    else return (new CommandReply
-                    {
-                        Type = CommandReply.LogType.Error,
-                        FunctionCalled = command,
-                        Message = ex.Message,
-                    });
-				}
-				catch (Exception)
-				{
-					return (new CommandReply
-					{
-						Type = CommandReply.LogType.Error,
-						Message = $"The \"{command}\" doesn't exist.",
-					});
-				}
-
+                    Type = CommandReply.LogType.Error,
+                    FunctionCalled = command,
+                    Message = ex.Message,
+                });
 			}
-
+			catch (Exception)
+			{
+				return (new CommandReply
+				{
+					Type = CommandReply.LogType.Error,
+					Message = $"The \"{command}\" doesn't exist.",
+				});
+			}
 		}
 
 		/// <summary>
@@ -147,11 +142,15 @@ namespace Command_Interpreter
         {
             //Checking that function called or parameters exist
             if (tuple_commands.Exists(x => x.name == command))
-                throw new InvalidOperationException($"Function with name {command} already registered.");
-            else
+            {
+				tuple_commands.Find(x => x.name == command).func.Add(func);
+				//TODO:"add to the exising array of functions, unless the number of parameters is the same, in which case throw an error with "function with the same number of parameters alreaady registered"
+				//throw new InvalidOperationException($"Function with name {command} already registered.");
+			}
+			else
             {
                 Parameters.ValidateParams(func.GetMethodInfo());
-                tuple_commands.Add((command, func, info));
+                tuple_commands.Add((command, new List<Delegate> { func }, info));
             }
         }
 
@@ -202,22 +201,43 @@ namespace Command_Interpreter
             }
         }
 
-        /// <summary>
-        /// Retrieves a list of available commands and their associated information.
-        /// </summary>
-        /// <remarks>The returned <see cref="CommandReply"/> includes a list of tuples, where each tuple
-        /// contains the name of a command and its corresponding information. This method is useful for discovering the
-        /// available commands and their details.</remarks>
-        /// <returns>A <see cref="CommandReply"/> object containing a collection of command names and their descriptions.</returns>
-        public CommandReply List()
-        {
-            CommandReply replay = new();
+		/// <summary>
+		/// Retrieves a list of available commands and their associated information.
+		/// </summary>
+		/// <remarks>The returned <see cref="CommandReply"/> includes a list of tuples, where each tuple
+		/// contains the name of a command and its corresponding information. This method is useful for discovering the
+		/// available commands and their details.</remarks>
+		/// <returns>A <see cref="CommandReply"/> object containing a collection of command names and their descriptions.</returns>
+		private FuncList List()
+		{
+			FuncList list = new()
+			{
+				Entries = new List<FunctionEntry>() // Initialize the required property 'Entries'
+			};
 
-            foreach (var command in tuple_commands)
-            {
-                replay.ListFunctions.Add((command.name, command.info));
-            }
-            return replay;
-        }
+			foreach (var command in tuple_commands)
+			{
+				list.Entries.Add(new FunctionEntry(command.name, command.info));
+			}
+			return list;
+		}
 	}
+	// Update the FunctionEntry class to include a constructor that accepts parameters for Function and Description.
+	//public struct FunctionEntry
+	//{
+	//	public string Function = string.Empty;
+	//	public string Description = string.Empty;
+
+	//	// Constructor to initialize Function and Description.
+	//	public FunctionEntry(string function, string description)
+	//	{
+	//		Function = function;
+	//		Description = description;
+	//	}
+	//}
+	//public class FuncList
+ //   {
+ //       public required List<FunctionEntry> Entries { get; set; }// = new();
+ //   }
+
 }

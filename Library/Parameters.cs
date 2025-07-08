@@ -41,7 +41,7 @@ namespace Command_Interpreter
         public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
         {
 			int currentToken = 0;
-			List<object> arrayparams = [];
+			List<object> arrayparams = new();
             var funcParam = _methodInfo.GetParameters();
 	            
             if (funcParam.Length == _parameters.Length)
@@ -109,7 +109,7 @@ namespace Command_Interpreter
         /// and the elements must be separated by commas (",") without spaces or periods.</exception>
         public static int[] ArrayIntType(string _parameter)
         {
-            List<int> returnArraytype = [];
+            List<int> returnArraytype = new();
 
 			if (_parameter.Contains('[') && _parameter.Contains(']') && !_parameter.Contains('.') && !_parameter.Contains(' '))
             {
