@@ -3,19 +3,11 @@
 namespace Command_Interpreter
 {
 
-
-	//[Serializable, XmlRoot("Logs")]
-	//public class Log
-	//{
-	//	[XmlElement("CommandReply")]
-	//	public CommandReply[] logEntries { get; set; } = [];
-	//}
-
 	/// <summary>
 	/// Represents the result of a command execution, including its status, return value, and additional metadata.
 	/// </summary>
 	/// <remarks>This class provides information about the outcome of a command, such as whether it succeeded or
-	/// failed, the time the command was executed, and any associated messages or errors. It can also include a return
+	/// failed, the time the command was executed, and any associated messages or errors.It can also include a return
 	/// value from the command, if applicable.</remarks>
 	[XmlInclude(typeof(FuncList))]
 	public class CommandReply
@@ -29,7 +21,7 @@ namespace Command_Interpreter
 			Timestamp = DateTime.Now;
 		}
 
-		public object? Return = null;// string.Empty;
+		public object? Return = null;
 		public LogType Type { get; set; }
 		public DateTime Timestamp { get ; set; }
 		public string? FunctionCalled { get; set; }

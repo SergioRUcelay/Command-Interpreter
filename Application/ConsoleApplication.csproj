@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,13 +9,15 @@
 
   <ItemGroup>
     <None Remove="XSLTFile1.xslt" />
+    <None Remove="XSLTFile_HTML.xslt" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Aplication\XSLTFile.xslt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Aplication\XSLTFile_HTML.xslt">
+    <ProjectReference Include="..\Library\Command_Interpreter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="XSLTFile.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,12 +1,12 @@
-﻿using Microsoft.VisualBasic.FileIO;
-using System.Reflection;
-using System.Runtime.InteropServices;
+﻿using System.Reflection;
 
 namespace Command_Interpreter
 {
 	/// <summary>
-	/// This class receives a string, parses it, and validates the verb (Delegate), and its parameters.
-	/// </summary>
+    /// Provides functionality for managing and executing commands, including adding, removing, validating, and listing
+    /// commands.
+    /// </summary>
+    /// <remarks>The <see cref="Commands"/> class allows users to define commands, execute commands based on user input.</remarks>
 	public class Commands
     {
         public static bool terminate = false;
@@ -39,7 +39,6 @@ namespace Command_Interpreter
                 });
             }
             // Search for the Delegate in the list. Command is the first string of the split array and is therefore supposed to be the function.
-
             // Create an array of strings from a console string.
             string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             // This is the array of the parameters.
@@ -57,35 +56,29 @@ namespace Command_Interpreter
                 {
                     foreach (Delegate del in _CalledFunc)
                     {
-                        //find if any delegate has the same number of parameters as the incoming string array (thhe parsed parameters from the command line)
-                        //do the usual :)
+                        //find if any delegate has the same number of parameters as the incoming string array (the parsed parameters from the command line)
                         MethodInfo methodInfo = del.GetMethodInfo();
                         object[] parameters;
                         try
                         {
                             parameters = Parameters.SeekParams(methodInfo, consoleParameter);
                         }
-                        catch (TargetParameterCountException ex)
+                        catch (TargetParameterCountException)
                         {
                             continue;
                         }
 
                         var functionReply = methodInfo.Invoke(del.Target, parameters);
 
-
-                        //               if (functionReply is CommandReply reply && functionReply is not null)
-                        //               {
-                        return (new CommandReply
+						return new CommandReply
                         {
-                            //   ListFunctions = reply.ListFunctions,
-                            Return = functionReply,//.ToString() ?? string.Empty,
                             Type = CommandReply.LogType.Success,
-                            FunctionCalled = command,
-                            Message = "Function has been executed correctly.",
-                        });
+                            Return = functionReply,
+                            FunctionCalled = command
+                        };
                     }
-                    //TODO: return better info of the error, so in this case, there is a funcion or functions but they don't have the right number of parameters
-                    throw new TargetParameterCountException("Can't find function with N parameter number");
+					//TODO: return better info of the error, so in this case, there is a funcion or functions but they don't have the right number of parameters
+					throw new TargetParameterCountException("Can't find function with N parameter number");
                 }
                 else
                     return (new CommandReply

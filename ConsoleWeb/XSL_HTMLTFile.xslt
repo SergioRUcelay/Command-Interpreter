@@ -14,7 +14,7 @@
 	</xsl:template>
 
 	<xsl:template match="CommandReply">
-		<div style="margin-bottom: 1em; font-family: monospace;">
+		<div style="margin-bottom: 1em; font-family: monospace; color: white; font-size: 17px">
 
 			<!-- Type -->
 			<xsl:choose>
@@ -41,7 +41,7 @@
 				</xsl:when>
 			</xsl:choose>
 
-			<!-- Return -->
+			<!-- Return for list -->
 			<xsl:if test="Return/Entries/FunctionEntry">
 			<div>
 				<strong>Available Functions:</strong>
@@ -73,14 +73,12 @@
 			</div>
 			</xsl:if>
 			<xsl:if test="Return and not(Return/Entries/FunctionEntry)">
-				<div style="color: blue;">
+				<div style="color: grey;">
 					<strong>Return:</strong>
 					<xsl:value-of select="Return"/>
 				</div>
 			</xsl:if>
-			<!-- List Functions -->
-
-
+							
 			<!-- Timestamp -->
 			<xsl:if test="Timestamp">
 				<div>
@@ -113,34 +111,18 @@
 					<xsl:value-of select="ThrowError"/>
 				</div>
 			</xsl:if>
-
-
-			<!--<xsl:if test="ListFunctions">
-				<div>
-					<strong>Available Functions:</strong>
-					<ul>
-						<xsl:for-each select="ListFunctions/ValueTupleOfStringString">
-							<li>
-								<strong>
-									<xsl:value-of select="Item1"/>:
-								</strong>
-								<xsl:value-of select="Item2"/>
-							</li>
-						</xsl:for-each>
-					</ul>
-				</div>
-			</xsl:if>-->
 		</div>
-	</xsl:template>
-	<xsl:template match="result">
+	
+</xsl:template>
+		<!--<xsl:template match="result">
 	  <xsl:choose>
 		<xsl:when test="return/entries/functionentry">
 		  <xsl:apply-templates select="return/entries/functionentry"/>
 		</xsl:when>
 		<xsl:otherwise>
-		  <!-- Other processing -->
+		  Other processing
 		</xsl:otherwise>
 	  </xsl:choose>
-	</xsl:template>
+	</xsl:template>-->
 
 </xsl:stylesheet>
