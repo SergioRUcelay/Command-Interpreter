@@ -7,14 +7,14 @@ using System.Xml.Xsl;
 
 Commands com = new();
 string _Int		= "function that adds the given numbers.";
-string _String  = "Function accepting string chains";
-string _Array   = "Function accepting Arrays of int";
-string _Float   = "Function accepting float numbers";
+string _String	= "Function accepting string chains";
+string _Array	= "Function accepting Arrays of int";
+string _Float	= "Function accepting float numbers";
 string _Bool	= "Function accepting bool values";
 string _IntRest = "Function subtracts two given numbers";
+
 try
 {
-	//add try catch to deal with non parsable parameters
 	com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
 	com.AddFunc("Float", (float a, float b) => a + b, _Float);
@@ -22,6 +22,7 @@ try
 	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
+	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
 }
 catch (FormatException ex)
 {
@@ -100,7 +101,7 @@ static string XmlToText(string xml)
 static string WriterOfNewXmlString<T>(T newxmlmessage)
 {
 	string consoleOutput;
-	
+
 	StringWriter logEntryWriter = new();
 	XmlSerializer _serializerFor_LogEntry = new(typeof(T));
 	_serializerFor_LogEntry.Serialize(logEntryWriter, newxmlmessage);

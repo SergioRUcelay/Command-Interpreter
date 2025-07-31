@@ -2,7 +2,6 @@
 
 namespace Command_Interpreter
 {
-
 	/// <summary>
 	/// Represents the result of a command execution, including its status, return value, and additional metadata.
 	/// </summary>
@@ -23,11 +22,10 @@ namespace Command_Interpreter
 
 		public object? Return = null;
 		public LogType Type { get; set; }
-		public DateTime Timestamp { get ; set; }
+		public DateTime Timestamp { get; set; }
 		public string? FunctionCalled { get; set; }
 		public string? Message { get; set; }
 		public string? ThrowError { get; set; }
-
 	}
 
 	public struct FunctionEntry
@@ -44,6 +42,6 @@ namespace Command_Interpreter
 	}
 	public class FuncList
 	{
-		public List<FunctionEntry> Entries  = new();
+		public List<FunctionEntry> Entries = new();
 	}
 }

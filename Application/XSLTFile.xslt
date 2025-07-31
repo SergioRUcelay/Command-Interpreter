@@ -1,81 +1,61 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
 	<xsl:output method="text" encoding="UTF-8"/>
-	
-	<!-- Alternative template for root element if it's not LogEntry -->
-	<xsl:template match="*[Type or Return or Function or Description or Timestamp or FunctionCalled or Message or ThrowError]">
-		
-		<!-- Type -->
+
+	<xsl:template match="/">
+		<xsl:apply-templates select="//CommandReply"/>
+	</xsl:template>
+
+	<xsl:template match="CommandReply">
+		<!-- Tipo -->
 		<xsl:choose>
 			<xsl:when test="Type = 'Error'">
-				<xsl:text>\x1b[31m</xsl:text>
-				<!-- Red color -->
-				<xsl:value-of select="Type"/>
-				<xsl:text>\x1b[0m</xsl:text>
-				<xsl:text>&#10;</xsl:text>
-				<!-- Reset color -->
+				<xsl:text>\x1B[31m[Error]\x1B[0m&#10;</xsl:text>
 			</xsl:when>
 			<xsl:when test="Type = 'Success'">
-				<xsl:text>\x1b[92m</xsl:text>
-				<!-- Blue color -->
-				<xsl:value-of select="Type"/>
-				<xsl:text >\x1b[0m</xsl:text>
-				<xsl:text>&#10;</xsl:text>
-				<!-- Reset color -->
+				<xsl:text>\x1B[32m[Success]\x1B[0m&#10;</xsl:text>
 			</xsl:when>
 			<xsl:when test="Type = 'Void'">
-				<xsl:text>\x1b[93m</xsl:text>
-				<!-- Yellow color -->
-				<xsl:value-of select="Type"/>
-				<xsl:text >\x1b[0m</xsl:text>
-				<xsl:text>&#10;</xsl:text>
-				<!-- Reset color -->
+				<xsl:text>\x1B[33m[Void]\x1B[0m&#10;</xsl:text>
 			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text>\x1B[36m[Unknown Type]\x1B[0m&#10;</xsl:text>
+			</xsl:otherwise>
 		</xsl:choose>
-		
-		<!-- Function and Description-->
-		<xsl:if test="Function">
-			<xsl:text>\x1b[92m</xsl:text>
-			<xsl:value-of select="Function"/>
-			<xsl:text>: </xsl:text>
-			<xsl:value-of select="Description"/>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
-		
-		<!-- Return -->
-		<xsl:if test="Return">
-			<xsl:text>Return: </xsl:text>
-			<xsl:value-of select="Return"/>
+
+		<!-- Lista de funciones -->
+		<xsl:if test="Return/Entries/FunctionEntry">
+			<xsl:text>Available Functions:&#10;</xsl:text>
+			<xsl:for-each select="Return/Entries/FunctionEntry">
+				<xsl:text>\x1B[34m	</xsl:text>
+				<!-- Azul para función -->
+				<xsl:value-of select="Function"/>
+				<xsl:text>\x1B[0m</xsl:text>
+				<xsl:text>	- </xsl:text>
+				<xsl:value-of select="Description"/>
+				<xsl:text>&#10;</xsl:text>
+			</xsl:for-each>
+			<xsl:text>Total functions: </xsl:text>
+			<xsl:value-of select="count(Return/Entries/FunctionEntry)"/>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
 
-		<!-- Timestamp -->
-		<xsl:if test="Timestamp">
-			<xsl:text>Timestamp: </xsl:text>
-			<xsl:value-of select="concat(substring(Timestamp, 6, 2), '/', substring(Timestamp, 9, 2), '/', substring(Timestamp, 1, 4), ' ',
-					substring(Timestamp, 12, 2), 'h:', substring(Timestamp, 15, 2), 'm:',substring(Timestamp, 18, 2),'s')"/>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
-
-		<!-- Function Called -->
+		<!-- Función invocada -->
 		<xsl:if test="FunctionCalled">
-			<xsl:text>Function: </xsl:text>
+			<xsl:text>Function Called: </xsl:text>
 			<xsl:value-of select="FunctionCalled"/>
 			<xsl:text>&#10;</xsl:text>
+
 		</xsl:if>
 
-		<!-- Message -->
+		<!-- Mensaje opcional -->
 		<xsl:if test="Message">
-			<xsl:text>Message: </xsl:text>
+			<xsl:text>Message:\x1B[35m </xsl:text>
 			<xsl:value-of select="Message"/>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
-
-		<!-- ThrowError -->
-		<xsl:if test="ThrowError">
-			<xsl:text>ThrowError: </xsl:text>
-			<xsl:value-of select="ThrowError"/>
+			<xsl:text> \x1B[0m</xsl:text>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
 	</xsl:template>
+
 </xsl:stylesheet>
