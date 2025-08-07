@@ -15,11 +15,11 @@ string _IntRest = "Function subtracts two given numbers";
 
 try
 {
-	com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
 	com.AddFunc("Float", (float a, float b) => a + b, _Float);
 	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("Bool", (bool value) => value, _Bool);
+	com.AddFunc("double", (double value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
 	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");

@@ -1,4 +1,30 @@
-﻿using System.Reflection;
+﻿
+#region License
+// Copyright (c) 2025 Sergio R. Ucelay
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+# endregion
+
+using System.Reflection;
 
 namespace Command_Interpreter
 {
@@ -12,7 +38,7 @@ namespace Command_Interpreter
 		public static bool terminate = false;
 
 		// Function container.
-		private readonly List<(string name, List<Delegate> func, string info)> tuple_commands = new();
+		private readonly List<(string name, List<Delegate> funcs, string info)> tuple_commands = new();
 
 		// This is a string that describes the List function.
 		private readonly string list = "Function for list all functions of all program";
@@ -25,32 +51,29 @@ namespace Command_Interpreter
 		/// <summary>
 		/// Retrieves the array on the command line and sorts the Delegate and it's parameters.
 		/// </summary>
-		/// <param name="verb">The user's string</param>
+		/// <param name="command">The user's string</param>
 		/// <returns></returns>
-		public CommandReply Command(string verb)
+		public CommandReply Command(string command)
 		{
 			// Checks if verb is null. And return a error message if it is null.
-			if (string.IsNullOrEmpty(verb))
+			if (string.IsNullOrEmpty(command))
 			{
-				return (new CommandReply
+				return new CommandReply
 				{
 					Type = CommandReply.LogType.Void,
 					Message = "No function has been called"
-				});
+				};
 			}
 			// Search for the Delegate in the list. Command is the first string of the split array and is therefore supposed to be the function.
 			// Create an array of strings from a console string.
-			string[] textConsole = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+			string[] textConsole = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 			// This is the array of the parameters.
-			string[] consoleParameter = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).ToArray();
+			string[] consoleParameter = textConsole[1..];
 			// This is a string that contains the name of a function.
-			string command = textConsole[0].ToLower();
+			string verb = textConsole[0].ToLower();
 			try
 			{
-				if (!ValidateFunction(command))
-					throw new Exception();
-
-				List<Delegate> _CalledFunc = tuple_commands.Find(entry => entry.name.ToLower() == command).func;
+				List<Delegate> _CalledFunc = tuple_commands.Find(entry => entry.name.ToLower() == verb).funcs;
 
 				if (_CalledFunc is not null)
 				{
@@ -74,53 +97,52 @@ namespace Command_Interpreter
 						{
 							Type = CommandReply.LogType.Success,
 							Return = functionReply,
-							FunctionCalled = command
+							FunctionCalled = verb
 						};
 					}
-					//TODO: return better info of the error, so in this case, there is a funcion or functions but they don't have the right number of parameters
-					throw new TargetParameterCountException("Can't find function with N parameter number");
+					throw new TargetParameterCountException();
 				}
 				else
-					return (new CommandReply
+					return new CommandReply
 					{
 						Type = CommandReply.LogType.Void,
-						Message = $"The \"{command}\" doesn't exist.",
-					});
+						Message = $"Command \"{verb}\" doesn't exist.",
+					};
 			}
-			catch (TargetParameterCountException)
+			catch (TargetParameterCountException ex)
 			{
-				return (new CommandReply
+				return new CommandReply
 				{
 					Type = CommandReply.LogType.Error,
-					FunctionCalled = command,
-					Message = "The number of expected parameters differs from the required number.",
-				});
+					FunctionCalled = verb,
+					Message = ex.Message.ToString()//"The number of expected parameters differs from the required number.",
+				};
 			}
 			catch (TargetInvocationException ex)
 			{
 				if (ex.InnerException is not null)
 				{
-					return (new CommandReply
+					return new CommandReply
 					{
 						Type = CommandReply.LogType.Error,
-						FunctionCalled = command,
+						FunctionCalled = verb,
 						Message = ex.InnerException.Message,
-					});
+					};
 				}
-				else return (new CommandReply
+				else return new CommandReply
 				{
 					Type = CommandReply.LogType.Error,
-					FunctionCalled = command,
+					FunctionCalled = verb,
 					Message = ex.Message,
-				});
+				};
 			}
 			catch (Exception)
 			{
-				return (new CommandReply
+				return new CommandReply
 				{
 					Type = CommandReply.LogType.Error,
-					Message = $"The \"{command}\" doesn't exist.",
-				});
+					Message = $"The \"{verb}\" doesn't exist.",
+				};
 			}
 		}
 
@@ -136,7 +158,7 @@ namespace Command_Interpreter
 			//Checking that function called or parameters exist
 			if (tuple_commands.Exists(x => x.name == command))
 			{
-				tuple_commands.Find(x => x.name == command).func.Add(func);
+				tuple_commands.Find(x => x.name == command).funcs.Add(func);
 				//TODO:"add to the exising array of functions, unless the number of parameters is the same, in which case throw an error with "function with the same number of parameters alreaady registered"
 				//throw new InvalidOperationException($"Function with name {command} already registered.");
 			}
@@ -164,19 +186,6 @@ namespace Command_Interpreter
 		}
 
 		/// <summary>
-		/// Validates whether the specified command exists in the predefined list of commands.
-		/// </summary>
-		/// <param name="command">The command to validate. This value is case-insensitive.</param>
-		/// <returns><see langword="true"/> if the command exists in the list; otherwise, <see langword="false"/>.</returns>
-		public bool ValidateFunction(string command)
-		{
-			if (tuple_commands.Exists(x => x.name.ToLower() == command.ToLower()))
-				return true;
-
-			return false;
-		}
-
-		/// <summary>
 		/// Retrieves a list of available commands and their associated information.
 		/// </summary>
 		/// <remarks>The returned <see cref="CommandReply"/> includes a list of tuples, where each tuple
@@ -185,14 +194,20 @@ namespace Command_Interpreter
 		/// <returns>A <see cref="CommandReply"/> object containing a collection of command names and their descriptions.</returns>
 		private FuncList List()
 		{
-			FuncList list = new()
-			{
-				Entries = new List<FunctionEntry>() // Initialize the required property 'Entries'
-			};
+			FuncList list = new();
 
 			foreach (var command in tuple_commands)
 			{
-				list.Entries.Add(new FunctionEntry(command.name, command.info));
+				foreach (Delegate del in command.funcs)
+				{
+					var ret = del.GetMethodInfo().ReturnType.ToString();
+					List<string> args = new List<string>();
+					foreach (var parameter in del.GetMethodInfo().GetParameters())
+					{
+						args.Add(parameter.ParameterType.Name);
+					}
+					list.Entries.Add(new FunctionEntry(command.name, command.info, args.ToArray(), ret));
+				}
 			}
 			return list;
 		}

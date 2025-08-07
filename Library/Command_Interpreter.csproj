@@ -5,19 +5,21 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  
+	<PackageId>Command-Interpreter</PackageId>
+	<Version>1.0.0</Version>
+	<Authors>Sergio R. Ucelay</Authors>
+	<Description>A parser for adding functions and calling them from the command line.</Description>
+	<PackageTags>CLI;blazor;development;console;parser;command;interpreter</PackageTags>
+	<RepositoryUrl>https://github.com/SergioRUcelay/Command-Interpreter</RepositoryUrl>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageProjectUrl>https://github.com/SergioRUcelay/Command-Interpreter</PackageProjectUrl>
+	<PackageIcon>icon.png</PackageIcon>
+
+	<IncludeSymbols>true</IncludeSymbols>
+	<IncludeSource>true</IncludeSource>
+
+	<DevelopmentDependency>false</DevelopmentDependency>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="XSLTFile1.xslt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Aplication\XSLTFile.xslt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Aplication\XSLTFile_HTML.xslt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 
 </Project>

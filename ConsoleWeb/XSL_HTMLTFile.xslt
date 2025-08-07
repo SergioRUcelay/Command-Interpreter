@@ -44,27 +44,44 @@
 			<!-- Return for list -->
 			<xsl:if test="Return/Entries/FunctionEntry">
 				<div>
-					<strong>Available Functions:</strong>
+					<strong>Available Functions: </strong>
 					<table class="functions-table">
 						<thead>
 							<tr>
 								<th>Function</th>
+								<th>Parameters</th>
 								<th>Description</th>
 							</tr>
 						</thead>
 						<tbody>
 							<xsl:for-each select="Return/Entries/FunctionEntry">
 								<tr>
-									<td>
-										<strong>
+									<!-- Funtion with signature -->
+									<td >
+										<code>
+											<xsl:value-of select="ReturnType"/>
+											<xsl:text> </xsl:text>
 											<xsl:value-of select="Function"/>
-										</strong>
+										</code>
 									</td>
+									<td style="color: grey">
+										<xsl:text>	(</xsl:text>
+										<xsl:for-each select="Parameters/string">
+											<xsl:value-of select="."/>
+											<xsl:if test="position() != last()">
+												<xsl:text>, </xsl:text>
+											</xsl:if>
+										</xsl:for-each>
+										<xsl:text>)</xsl:text>
+									</td>
+
+									<!-- Description -->
 									<td>
 										<xsl:value-of select="Description"/>
 									</td>
 								</tr>
 							</xsl:for-each>
+
 						</tbody>
 					</table>
 					<div style="margin-top: 10px; font-size: 0.9em; color: #666;">
@@ -74,7 +91,7 @@
 			</xsl:if>
 			<xsl:if test="Return and not(Return/Entries/FunctionEntry)">
 				<div style="color: grey;">
-					<strong>Return:</strong>
+					<strong>Return: </strong>
 					<xsl:value-of select="Return"/>
 				</div>
 			</xsl:if>
@@ -82,7 +99,7 @@
 			<!-- Timestamp -->
 			<xsl:if test="Timestamp">
 				<div>
-					<strong>Timestamp:</strong>
+					<strong>Timestamp: </strong>
 					<xsl:value-of select="concat(substring(Timestamp, 6, 2), '/', substring(Timestamp, 9, 2), '/', substring(Timestamp, 1, 4), ' ',
 					substring(Timestamp, 12, 2), 'h:', substring(Timestamp, 15, 2), 'm:',substring(Timestamp, 18, 2),'s')"/>
 				</div>
@@ -91,7 +108,7 @@
 			<!-- Function Called -->
 			<xsl:if test="FunctionCalled">
 				<div>
-					<strong>Function:</strong>
+					<strong>Function: </strong>
 					<xsl:value-of select="FunctionCalled"/>
 				</div>
 			</xsl:if>
@@ -99,7 +116,7 @@
 			<!-- Message -->
 			<xsl:if test="Message">
 				<div>
-					<strong>Message:</strong>
+					<strong>Message: </strong>
 					<xsl:value-of select="Message"/>
 				</div>
 			</xsl:if>
@@ -107,7 +124,7 @@
 			<!-- ThrowError -->
 			<xsl:if test="ThrowError">
 				<div>
-					<strong>ThrowError:</strong>
+					<strong>ThrowError: </strong>
 					<xsl:value-of select="ThrowError"/>
 				</div>
 			</xsl:if>

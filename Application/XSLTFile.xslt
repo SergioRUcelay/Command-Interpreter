@@ -8,40 +8,74 @@
 	</xsl:template>
 
 	<xsl:template match="CommandReply">
-		<!-- Tipo -->
+		<!-- Type -->
 		<xsl:choose>
 			<xsl:when test="Type = 'Error'">
-				<xsl:text>\x1B[31m[Error]\x1B[0m&#10;</xsl:text>
+				<xsl:text>\x1B[31m Error \x1B[0m&#10;</xsl:text>
 			</xsl:when>
 			<xsl:when test="Type = 'Success'">
-				<xsl:text>\x1B[32m[Success]\x1B[0m&#10;</xsl:text>
+				<xsl:text>\x1B[32m Success \x1B[0m&#10;</xsl:text>
 			</xsl:when>
 			<xsl:when test="Type = 'Void'">
-				<xsl:text>\x1B[33m[Void]\x1B[0m&#10;</xsl:text>
+				<xsl:text>\x1B[33m Void \x1B[0m&#10;</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:text>\x1B[36m[Unknown Type]\x1B[0m&#10;</xsl:text>
 			</xsl:otherwise>
 		</xsl:choose>
 
-		<!-- Lista de funciones -->
+		<!-- Return for list -->
 		<xsl:if test="Return/Entries/FunctionEntry">
 			<xsl:text>Available Functions:&#10;</xsl:text>
+			<xsl:text>&#10;</xsl:text>
 			<xsl:for-each select="Return/Entries/FunctionEntry">
-				<xsl:text>\x1B[34m	</xsl:text>
-				<!-- Azul para función -->
+				<xsl:text>\x1B[34m  </xsl:text>
+				<!-- Function name -->
 				<xsl:value-of select="Function"/>
+
+				<!-- Parameters inline -->
+				<xsl:if test="Parameters/string">
+					<xsl:text>\x1B[90m</xsl:text>
+					<xsl:text>	(</xsl:text>
+					<xsl:for-each select="Parameters/string">
+						<xsl:value-of select="."/>
+						<xsl:if test="position() != last()">
+							<xsl:text>,</xsl:text>
+						</xsl:if>
+					</xsl:for-each>
+					<xsl:text>)</xsl:text>
+				</xsl:if>
+
 				<xsl:text>\x1B[0m</xsl:text>
 				<xsl:text>	- </xsl:text>
 				<xsl:value-of select="Description"/>
 				<xsl:text>&#10;</xsl:text>
 			</xsl:for-each>
+			<xsl:text>&#10;</xsl:text>
+
 			<xsl:text>Total functions: </xsl:text>
 			<xsl:value-of select="count(Return/Entries/FunctionEntry)"/>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
+		
+		<!-- Return -->
+		<xsl:if test="Return and not(Return/Entries/FunctionEntry)">
+			<xsl:text>Return: </xsl:text>
+			<xsl:value-of select="Return"/>
+			<xsl:text>&#10;</xsl:text>
 
-		<!-- Función invocada -->
+		</xsl:if>
+
+		<!-- Timestamp -->
+		<xsl:if test="Timestamp">
+			<xsl:text>Timestamp: </xsl:text>
+			<xsl:value-of select="concat(substring(Timestamp, 6, 2), '/', substring(Timestamp, 9, 2), '/', substring(Timestamp, 1, 4), ' ',
+					substring(Timestamp, 12, 2), 'h:', substring(Timestamp, 15, 2), 'm:',substring(Timestamp, 18, 2),'s')"/>
+			<xsl:text>&#10;</xsl:text>
+
+		</xsl:if>
+
+		<!-- Function Called -->
 		<xsl:if test="FunctionCalled">
 			<xsl:text>Function Called: </xsl:text>
 			<xsl:value-of select="FunctionCalled"/>
@@ -49,11 +83,10 @@
 
 		</xsl:if>
 
-		<!-- Mensaje opcional -->
+		<!-- Message -->
 		<xsl:if test="Message">
-			<xsl:text>Message:\x1B[35m </xsl:text>
+			<xsl:text>Message: </xsl:text>
 			<xsl:value-of select="Message"/>
-			<xsl:text> \x1B[0m</xsl:text>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
 	</xsl:template>

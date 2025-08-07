@@ -18,6 +18,7 @@ try
 	com.AddFunc("Float", (float a, float b) => a + b, _Float);
 	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("Bool", (bool value) => value, _Bool);
+	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
 	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
@@ -37,8 +38,9 @@ while (!Commands.terminate)
 	if (verb != null)
 	{
 		CommandReply result = com.Command(verb);
-		//XmlToText(WriterOfNewXmlString(result));
-		Console.WriteLine(XmlToText(WriterOfNewXmlString(result)));
+		var a = WriterOfNewXmlString(result);
+		var ed = XmlToText(WriterOfNewXmlString(result));
+		Console.WriteLine(ed);
 	}
 }
 
