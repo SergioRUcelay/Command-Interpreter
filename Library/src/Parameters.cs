@@ -47,13 +47,14 @@ namespace Command_Interpreter
 		/// </summary>
 		/// <param name="_methodInfo">The method that contains the parameters to compare.</param>
 		/// <exception cref="FormatException"></exception>
-		public static void ValidateParams(MethodInfo _methodInfo)
+		public static bool ValidateParams(MethodInfo _methodInfo)
 		{
 			foreach (var currentParam in _methodInfo.GetParameters())
 			{
 				if (!_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
 					throw new FormatException($"Can't parse parameter {currentParam.Name} of type {currentParam.ParameterType.Name} in function {_methodInfo.Name}");
 			}
+			return true;
 		}
 
 		/// <summary>

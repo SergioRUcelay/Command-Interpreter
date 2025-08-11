@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ConsoleWeb\ConsoleWeb.csproj" />
     <ProjectReference Include="..\Library\Command_Interpreter.csproj" />
   </ItemGroup>
 

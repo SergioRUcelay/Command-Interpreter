@@ -25,6 +25,7 @@
 # endregion
 
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Command_Interpreter
 {
@@ -105,7 +106,7 @@ namespace Command_Interpreter
 				else
 					return new CommandReply
 					{
-						Type = CommandReply.LogType.Void,
+						Type = CommandReply.LogType.Error,
 						Message = $"Command \"{verb}\" doesn't exist.",
 					};
 			}
@@ -115,7 +116,7 @@ namespace Command_Interpreter
 				{
 					Type = CommandReply.LogType.Error,
 					FunctionCalled = verb,
-					Message = ex.Message.ToString()//"The number of expected parameters differs from the required number.",
+					Message = ex.Message.ToString()
 				};
 			}
 			catch (TargetInvocationException ex)
@@ -136,14 +137,6 @@ namespace Command_Interpreter
 					Message = ex.Message,
 				};
 			}
-			catch (Exception)
-			{
-				return new CommandReply
-				{
-					Type = CommandReply.LogType.Error,
-					Message = $"The \"{verb}\" doesn't exist.",
-				};
-			}
 		}
 
 		/// <summary>
@@ -155,18 +148,36 @@ namespace Command_Interpreter
 		/// <exception cref="InvalidOperationException"></exception>
 		public void AddFunc(string command, Delegate func, string info)
 		{
-			//Checking that function called or parameters exist
-			if (tuple_commands.Exists(x => x.name == command))
+			//Checking that parameters exist and can be parsed
+			if (Parameters.ValidateParams(func.GetMethodInfo()))
 			{
-				tuple_commands.Find(x => x.name == command).funcs.Add(func);
-				//TODO:"add to the exising array of functions, unless the number of parameters is the same, in which case throw an error with "function with the same number of parameters alreaady registered"
-				//throw new InvalidOperationException($"Function with name {command} already registered.");
+				if (!tuple_commands.Exists(x => x.name == command))
+					tuple_commands.Add((command, new List<Delegate> { func }, info));
+
+				else
+				{
+					var passFuncparameters = func.GetMethodInfo().GetParameters();
+					var existingFunction = tuple_commands.FirstOrDefault(x => x.name == command).funcs.Find(x => x.Method.Name == func.Method.Name);
+					if (existingFunction != null)
+					{
+						var exisFuncParamm = existingFunction.GetMethodInfo().GetParameters();
+						if (passFuncparameters.Length != exisFuncParamm.Length)
+						{
+							tuple_commands.Add((command, new List<Delegate> { func }, info));
+						}
+					}
+					else
+						throw new InvalidOperationException($"Function with name {func.ToString()} don't exist");
+
+					//tuple_commands.Add((command, new List<Delegate> { func }, info));
+				}
+				
 			}
-			else
-			{
-				Parameters.ValidateParams(func.GetMethodInfo());
-				tuple_commands.Add((command, new List<Delegate> { func }, info));
-			}
+			//if (tuple_commands.Exists(x => x.name == command))
+			//	{
+			//		tuple_commands.Find(x => x.name == command).funcs.Add(func);
+					//TODO:"add to the exising array of functions, unless the number of parameters is the same, in which case throw an error with "function with the same number of parameters alreaady registered"
+					//throw new InvalidOperationException($"Function with name {command} already registered.");
 		}
 
 		/// <summary>

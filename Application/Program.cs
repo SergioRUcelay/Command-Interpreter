@@ -1,4 +1,5 @@
 ﻿using Command_Interpreter;
+using ConsoleWeb;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.Xsl;
@@ -13,15 +14,18 @@ string _IntRest = "Function subtracts two given numbers";
 
 try
 {
-	com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
-	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
-	com.AddFunc("Float", (float a, float b) => a + b, _Float);
-	com.AddFunc("Int", (int p, int f) => p + f, _Int);
-	com.AddFunc("Bool", (bool value) => value, _Bool);
-	com.AddFunc("Bool", (bool value) => value, _Bool);
-	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
-	com.AddFunc("Array", (int[] code) => code, _Array);
-	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
+	//com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
+	//com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
+	//com.AddFunc("Float", (float a, string b) => a + b, _Float);
+	//com.AddFunc("Float", (float a) => a + 100, _Float);
+	//com.AddFunc("Int", (int p, int f) => p + f, _Int);
+	//com.AddFunc("Bool", (bool value) => value, _Bool);
+	//com.AddFunc("Bool", (bool value) => value, _Bool);
+	//com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
+	//com.AddFunc("Array", (int[] code) => code, _Array);
+	//com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
+	com.AddFunc("prueba", new Action<int>(Ci.peich), "algo va mal");
+	com.AddFunc("prueba", new Action<int, int>(Ci.peich), "algo va mal");
 }
 catch (FormatException ex)
 {

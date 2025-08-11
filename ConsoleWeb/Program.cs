@@ -1,4 +1,5 @@
 using Command_Interpreter;
+using ConsoleWeb;
 using System.Net.WebSockets;
 using System.Text;
 using System.Xml;
@@ -13,6 +14,7 @@ string _Float	= "Function accepting float numbers";
 string _Bool	= "Function accepting bool values";
 string _IntRest = "Function subtracts two given numbers";
 
+
 try
 {
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
@@ -23,6 +25,7 @@ try
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
 	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
+	
 }
 catch (FormatException ex)
 {
