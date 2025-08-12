@@ -1,5 +1,4 @@
 using Command_Interpreter;
-using ConsoleWeb;
 using System.Net.WebSockets;
 using System.Text;
 using System.Xml;
@@ -7,11 +6,11 @@ using System.Xml.Serialization;
 using System.Xml.Xsl;
 
 Commands com = new();
-string _Int		= "function that adds the given numbers.";
-string _String	= "Function accepting string chains";
-string _Array	= "Function accepting Arrays of int";
-string _Float	= "Function accepting float numbers";
-string _Bool	= "Function accepting bool values";
+string _Int = "function that adds the given numbers.";
+string _String = "Function accepting string chains";
+string _Array = "Function accepting Arrays of int";
+string _Float = "Function accepting float numbers";
+string _Bool = "Function accepting bool values";
 string _IntRest = "Function subtracts two given numbers";
 
 
@@ -25,7 +24,7 @@ try
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
 	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
-	
+
 }
 catch (FormatException ex)
 {

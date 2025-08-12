@@ -1,4 +1,5 @@
 ﻿
+
 #region License
 // Copyright (c) 2025 Sergio R. Ucelay
 //
@@ -22,13 +23,25 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
-# endregion
+#endregion
 
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace Command_Interpreter
 {
+	public static class DictionaryExtensions
+	{
+		public static List<(Delegate func, string desc)> GetOrCreateKey(this Dictionary<string, List<(Delegate func, string desc)>> dict, string key)
+		{
+			if (!dict.TryGetValue(key, out var list))
+			{
+				list = new List<(Delegate func, string desc)>();
+				dict[key] = list;
+			}
+			return list;
+		}
+	}
+
 	/// <summary>
 	/// Provides functionality for managing and executing commands, including adding, removing, validating, and listing
 	/// commands.
@@ -39,14 +52,14 @@ namespace Command_Interpreter
 		public static bool terminate = false;
 
 		// Function container.
-		private readonly List<(string name, List<Delegate> funcs, string info)> tuple_commands = new();
+		private readonly Dictionary<string, List<(Delegate func, string desc)>> commands = [];
 
 		// This is a string that describes the List function.
-		private readonly string list = "Function for list all functions of all program";
+		private readonly string help = "Function for list all functions of all program";
 
 		public Commands()
 		{
-			tuple_commands.Add(("List", new List<Delegate> { List }, list));
+			commands.GetOrCreateKey("help").Add((List, help));
 		}
 
 		/// <summary>
@@ -74,18 +87,27 @@ namespace Command_Interpreter
 			string verb = textConsole[0].ToLower();
 			try
 			{
-				List<Delegate> _CalledFunc = tuple_commands.Find(entry => entry.name.ToLower() == verb).funcs;
-
-				if (_CalledFunc is not null)
+				if (!commands.TryGetValue(verb, out List<(Delegate func, string desc)>? _CalledFunctions))
 				{
-					foreach (Delegate del in _CalledFunc)
+					return new CommandReply
+					{
+						Type = CommandReply.LogType.Error,
+						Message = $"Command \"{verb}\" doesn't exist.",
+					};
+				}
+				else
+				{
+					foreach ((Delegate del, string desc) in _CalledFunctions)
 					{
 						//find if any delegate has the same number of parameters as the incoming string array (the parsed parameters from the command line)
 						MethodInfo methodInfo = del.GetMethodInfo();
+						var methodInfoParams = methodInfo.GetParameters();
 						object[] parameters;
 						try
 						{
-							parameters = Parameters.SeekParams(methodInfo, consoleParameter);
+							parameters = Parameters.SeekParams(methodInfoParams, consoleParameter);
+							if (methodInfoParams.Length != parameters.Length)
+								break;
 						}
 						catch (TargetParameterCountException)
 						{
@@ -103,12 +125,7 @@ namespace Command_Interpreter
 					}
 					throw new TargetParameterCountException();
 				}
-				else
-					return new CommandReply
-					{
-						Type = CommandReply.LogType.Error,
-						Message = $"Command \"{verb}\" doesn't exist.",
-					};
+
 			}
 			catch (TargetParameterCountException ex)
 			{
@@ -151,33 +168,32 @@ namespace Command_Interpreter
 			//Checking that parameters exist and can be parsed
 			if (Parameters.ValidateParams(func.GetMethodInfo()))
 			{
-				if (!tuple_commands.Exists(x => x.name == command))
-					tuple_commands.Add((command, new List<Delegate> { func }, info));
+				if (!commands.TryGetValue(command, out var entry))
+					commands.GetOrCreateKey(command).Add((func, info));
+
 
 				else
 				{
+					//entry is the function/description list
 					var passFuncparameters = func.GetMethodInfo().GetParameters();
-					var existingFunction = tuple_commands.FirstOrDefault(x => x.name == command).funcs.Find(x => x.Method.Name == func.Method.Name);
-					if (existingFunction != null)
+					foreach (var existingFunction in entry)
 					{
-						var exisFuncParamm = existingFunction.GetMethodInfo().GetParameters();
+						var exisFuncParamm = existingFunction.func.GetMethodInfo().GetParameters();
 						if (passFuncparameters.Length != exisFuncParamm.Length)
 						{
-							tuple_commands.Add((command, new List<Delegate> { func }, info));
+							entry.Add((func, info));
+							return;
 						}
 					}
-					else
-						throw new InvalidOperationException($"Function with name {func.ToString()} don't exist");
-
-					//tuple_commands.Add((command, new List<Delegate> { func }, info));
+					throw new InvalidOperationException($"Function with name {func.ToString()} exist, function wasn't added.");
 				}
-				
+
 			}
 			//if (tuple_commands.Exists(x => x.name == command))
 			//	{
 			//		tuple_commands.Find(x => x.name == command).funcs.Add(func);
-					//TODO:"add to the exising array of functions, unless the number of parameters is the same, in which case throw an error with "function with the same number of parameters alreaady registered"
-					//throw new InvalidOperationException($"Function with name {command} already registered.");
+			//TODO:"add to the exising array of functions, unless the number of parameters is the same, in which case throw an error with "function with the same number of parameters alreaady registered"
+			//throw new InvalidOperationException($"Function with name {command} already registered.");
 		}
 
 		/// <summary>
@@ -187,13 +203,8 @@ namespace Command_Interpreter
 		/// <exception cref="InvalidOperationException"></exception>
 		public void RemoveFunc(string name)
 		{
-			if (!tuple_commands.Exists(x => x.name.ToLower() == name.ToLower()))
+			if (!commands.Remove(name))
 				throw new InvalidOperationException($"Function with name {name} don't exist");
-			else
-			{
-				var index = tuple_commands.FindIndex(y => y.name.ToLower() == name.ToLower());
-				tuple_commands.Remove(tuple_commands[index]);
-			}
 		}
 
 		/// <summary>
@@ -207,17 +218,16 @@ namespace Command_Interpreter
 		{
 			FuncList list = new();
 
-			foreach (var command in tuple_commands)
+			foreach (var key in commands.Keys)
 			{
-				foreach (Delegate del in command.funcs)
+				foreach ((Delegate del, string desc) in commands[key])
 				{
 					var ret = del.GetMethodInfo().ReturnType.ToString();
-					List<string> args = new List<string>();
+					List<string> args = new();
 					foreach (var parameter in del.GetMethodInfo().GetParameters())
-					{
 						args.Add(parameter.ParameterType.Name);
-					}
-					list.Entries.Add(new FunctionEntry(command.name, command.info, args.ToArray(), ret));
+
+					list.Entries.Add(new FunctionEntry(key, desc, args.ToArray(), ret));
 				}
 			}
 			return list;

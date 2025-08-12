@@ -5,29 +5,30 @@ using System.Xml.Serialization;
 using System.Xml.Xsl;
 
 Commands com = new();
-string _Int		= "function that adds the given numbers.";
-string _String	= "Function accepting string chains";
-string _Array	= "Function accepting Arrays of int";
-string _Float	= "Function accepting float numbers";
-string _Bool	= "Function accepting bool values";
+string _Int = "function that adds the given numbers.";
+string _String = "Function accepting string chains";
+string _Array = "Function accepting Arrays of int";
+string _Float = "Function accepting float numbers";
+string _Bool = "Function accepting bool values";
 string _IntRest = "Function subtracts two given numbers";
 
 try
 {
-	//com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
-	//com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
-	//com.AddFunc("Float", (float a, string b) => a + b, _Float);
-	//com.AddFunc("Float", (float a) => a + 100, _Float);
-	//com.AddFunc("Int", (int p, int f) => p + f, _Int);
-	//com.AddFunc("Bool", (bool value) => value, _Bool);
-	//com.AddFunc("Bool", (bool value) => value, _Bool);
-	//com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
-	//com.AddFunc("Array", (int[] code) => code, _Array);
-	//com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
-	com.AddFunc("prueba", new Action<int>(Ci.peich), "algo va mal");
-	com.AddFunc("prueba", new Action<int, int>(Ci.peich), "algo va mal");
+	com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
+	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
+	com.AddFunc("Float", (float a, string b) => a + b, _Float);
+	com.AddFunc("Float", (float a) => a + 100, _Float);
+	com.AddFunc("Int", (int p, int f) => p + f, _Int);
+	com.AddFunc("Bool", (bool value) => value, _Bool);
+	com.AddFunc("Bool", (bool value) => value, _Bool);
+	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
+	com.AddFunc("Array", (int[] code) => code, _Array);
+	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
+	com.AddFunc("test", new Action<int>(Ci.peich), "Add 100 to int");
+	com.AddFunc("test", new Action<int, int>(Ci.peich), "Add int numbers");
+	com.AddFunc("test", new Action(Ci.peich), "Get you a 100");
 }
-catch (FormatException ex)
+catch (Exception ex)
 {
 	Console.WriteLine(ex.Message);
 }

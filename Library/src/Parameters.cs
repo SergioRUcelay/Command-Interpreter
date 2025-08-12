@@ -60,23 +60,46 @@ namespace Command_Interpreter
 		/// <summary>
 		/// Look for the parameters in the array. If they exist, parse them to the correct type.
 		/// </summary>
-		/// <param name="_methodInfo"> The function that contains the parameter to look for. </param>
-		/// <param name="_parameters"> The array that contains the strings that match with the parameter type. </param>
+		/// <param name="_methodParams"> The function that contains the parameter to look for. </param>
+		/// <param name="commandParameters"> The array that contains the strings that match with the parameter type. </param>
 		/// <returns> The array with the parameters. </returns>
 		/// <exception cref="TargetParameterCountException"></exception>
-		public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
+		//public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
+		//{
+		//	int currentToken = 0;
+		//	List<object> arrayparams = new();
+		//	var funcParam = _methodInfo.GetParameters();
+
+		//	if (funcParam.Length == _parameters.Length)
+		//	{
+		//		foreach (var currentParam in funcParam)
+		//		{
+		//			if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
+		//			{
+		//				var parseParam = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
+		//				if (parseParam != null)
+		//					arrayparams.Add(parseParam);
+		//			}
+
+		//		}
+		//		return arrayparams.ToArray();
+		//	}
+		//	else
+		//		throw new TargetParameterCountException();
+		//}
+
+		public static object[] SeekParams(ParameterInfo[] _methodParams, string[] commandParameters)
 		{
 			int currentToken = 0;
 			List<object> arrayparams = new();
-			var funcParam = _methodInfo.GetParameters();
 
-			if (funcParam.Length == _parameters.Length)
+			if (_methodParams.Length == commandParameters.Length)
 			{
-				foreach (var currentParam in funcParam)
+				foreach (var currentParam in _methodParams)
 				{
 					if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
 					{
-						var parseParam = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
+						var parseParam = dictionaryFunc.DynamicInvoke(commandParameters[currentToken++]);
 						if (parseParam != null)
 							arrayparams.Add(parseParam);
 					}
@@ -84,9 +107,10 @@ namespace Command_Interpreter
 				}
 				return arrayparams.ToArray();
 			}
-			else
-				throw new TargetParameterCountException();
+
+			throw new TargetParameterCountException();
 		}
+
 		/// <summary>
 		/// The method that pases the int type.
 		/// </summary>
