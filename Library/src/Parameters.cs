@@ -64,29 +64,6 @@ namespace Command_Interpreter
 		/// <param name="commandParameters"> The array that contains the strings that match with the parameter type. </param>
 		/// <returns> The array with the parameters. </returns>
 		/// <exception cref="TargetParameterCountException"></exception>
-		//public static object[] SeekParams(MethodInfo _methodInfo, string[] _parameters)
-		//{
-		//	int currentToken = 0;
-		//	List<object> arrayparams = new();
-		//	var funcParam = _methodInfo.GetParameters();
-
-		//	if (funcParam.Length == _parameters.Length)
-		//	{
-		//		foreach (var currentParam in funcParam)
-		//		{
-		//			if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
-		//			{
-		//				var parseParam = dictionaryFunc.DynamicInvoke(_parameters[currentToken++]);
-		//				if (parseParam != null)
-		//					arrayparams.Add(parseParam);
-		//			}
-
-		//		}
-		//		return arrayparams.ToArray();
-		//	}
-		//	else
-		//		throw new TargetParameterCountException();
-		//}
 
 		public static object[] SeekParams(ParameterInfo[] _methodParams, string[] commandParameters)
 		{
@@ -103,11 +80,9 @@ namespace Command_Interpreter
 						if (parseParam != null)
 							arrayparams.Add(parseParam);
 					}
-
 				}
 				return arrayparams.ToArray();
 			}
-
 			throw new TargetParameterCountException();
 		}
 
@@ -171,10 +146,10 @@ namespace Command_Interpreter
 					returnArraytype.Add(converttoint);
 				}
 			}
-			else throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \"','\".");
+			else
+				throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Int types");
 
 			return returnArraytype.ToArray();
 		}
-
 	}
 }

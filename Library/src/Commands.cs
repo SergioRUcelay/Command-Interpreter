@@ -1,6 +1,4 @@
-﻿
-
-#region License
+﻿#region License
 // Copyright (c) 2025 Sergio R. Ucelay
 //
 // Permission is hereby granted, free of charge, to any person
@@ -29,18 +27,22 @@ using System.Reflection;
 
 namespace Command_Interpreter
 {
-	public static class DictionaryExtensions
-	{
-		public static List<(Delegate func, string desc)> GetOrCreateKey(this Dictionary<string, List<(Delegate func, string desc)>> dict, string key)
-		{
-			if (!dict.TryGetValue(key, out var list))
-			{
-				list = new List<(Delegate func, string desc)>();
-				dict[key] = list;
-			}
-			return list;
-		}
-	}
+	/// <summary>
+	/// Provides extension methods for working with <see cref="Dictionary{TKey, TValue}"/> objects that have string keys
+	/// and values of type <see cref="List{T}"/> containing tuples of a delegate and a description.
+	/// </summary>
+	//public static class DictionaryExtensions
+	//{
+	//	public static List<(Delegate func, string desc)> GetOrCreateKey(this Dictionary<string, List<(Delegate func, string desc)>> dict, string key)
+	//	{
+	//		if (!dict.TryGetValue(key, out var list))
+	//		{
+	//			list = new List<(Delegate func, string desc)>();
+	//			dict[key] = list;
+	//		}
+	//		return list;
+	//	}
+	//}
 
 	/// <summary>
 	/// Provides functionality for managing and executing commands, including adding, removing, validating, and listing
@@ -59,7 +61,8 @@ namespace Command_Interpreter
 
 		public Commands()
 		{
-			commands.GetOrCreateKey("help").Add((List, help));
+			//commands.GetOrCreateKey("help").Add((Lista, help));
+			commands["help"] = [(List, help)]; // If the key doesn't exist, create a new list with the function and description.
 		}
 
 		/// <summary>
@@ -168,10 +171,9 @@ namespace Command_Interpreter
 			//Checking that parameters exist and can be parsed
 			if (Parameters.ValidateParams(func.GetMethodInfo()))
 			{
-				if (!commands.TryGetValue(command, out var entry))
-					commands.GetOrCreateKey(command).Add((func, info));
-
-
+				if (!commands.TryGetValue(command.ToLower(), out var entry))
+					commands[command.ToLower()] = [(func, info)];
+				//commands.GetOrCreateKey(command.ToLower()).Add((func, info));
 				else
 				{
 					//entry is the function/description list
@@ -187,13 +189,7 @@ namespace Command_Interpreter
 					}
 					throw new InvalidOperationException($"Function with name {func.ToString()} exist, function wasn't added.");
 				}
-
 			}
-			//if (tuple_commands.Exists(x => x.name == command))
-			//	{
-			//		tuple_commands.Find(x => x.name == command).funcs.Add(func);
-			//TODO:"add to the exising array of functions, unless the number of parameters is the same, in which case throw an error with "function with the same number of parameters alreaady registered"
-			//throw new InvalidOperationException($"Function with name {command} already registered.");
 		}
 
 		/// <summary>

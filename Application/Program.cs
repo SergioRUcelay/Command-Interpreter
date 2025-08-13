@@ -20,13 +20,12 @@ try
 	com.AddFunc("Float", (float a) => a + 100, _Float);
 	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("Bool", (bool value) => value, _Bool);
-	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
-	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
-	com.AddFunc("test", new Action<int>(Ci.peich), "Add 100 to int");
-	com.AddFunc("test", new Action<int, int>(Ci.peich), "Add int numbers");
+	com.AddFunc("test", new Func<int, int>(Ci.peich), "Add 100 to int");
+	com.AddFunc("test", new Func<int, int, int>(Ci.peich), "Add int numbers");
 	com.AddFunc("test", new Action(Ci.peich), "Get you a 100");
+	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
 }
 catch (Exception ex)
 {
@@ -34,7 +33,7 @@ catch (Exception ex)
 }
 
 Console.ForegroundColor = ConsoleColor.DarkGreen;
-Console.WriteLine("Command Interpreter\n\rVersion Alfa-0.5\n");
+Console.WriteLine("Command Interpreter\n\rVersion 1.0\n");
 while (!Commands.terminate)
 {
 	Console.ForegroundColor = ConsoleColor.White;

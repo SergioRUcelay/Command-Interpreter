@@ -2,13 +2,13 @@
 {
 	static public class Ci
 	{
-		public static void peich(int a, int b)
+		public static int peich(int a, int b)
 		{
-			Console.WriteLine(a + b);
+			return a + b;
 		}
-		public static void peich(int a)
+		public static int peich(int a)
 		{
-			Console.WriteLine(a - 100);
+			return a - 100;
 		}
 		public static void peich()
 		{
