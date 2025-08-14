@@ -24,6 +24,7 @@
 #endregion
 
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Command_Interpreter
 {
@@ -134,22 +135,23 @@ namespace Command_Interpreter
 		/// and the elements must be separated by commas (",") without spaces or periods.</exception>
 		public static int[] ArrayIntType(string _parameter)
 		{
-			List<int> returnArraytype = new();
-
-			if (_parameter.Contains('[') && _parameter.Contains(']') && !_parameter.Contains('.') && !_parameter.Contains(' '))
+			int[] returnArraytype;
+			Match match = Regex.Match(_parameter, @"(?<=\[\s*)\d+(?:,+\d+)*(?=\s*\])");
+			if (match.Success)
 			{
 				var stringArray = _parameter.Replace("[", "").Replace("]", "").Replace(".", ",");
 				var arraytype = stringArray.Split(',');
+				returnArraytype = new int[arraytype.Length];
 				for (int i = 0; i <= arraytype.Length - 1; i++)
 				{
 					var converttoint = IntType(arraytype[i]);
-					returnArraytype.Add(converttoint);
+					returnArraytype[i] = converttoint;
 				}
 			}
 			else
 				throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Int types");
 
-			return returnArraytype.ToArray();
+			return returnArraytype;
 		}
 	}
 }

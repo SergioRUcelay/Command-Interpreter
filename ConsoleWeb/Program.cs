@@ -24,7 +24,7 @@ try
 	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
-	com.AddFunc("Array", (int[] code) => code, _Array);
+	com.AddFunc("Array", (int[] code) => 0, _Array);
 	com.AddFunc("test", new Func<int, int>(Ci.peich), "Add 100 to int");
 	com.AddFunc("test", new Func<int, int, int>(Ci.peich), "Add int numbers");
 	com.AddFunc("test", new Action(Ci.peich), "Get you a 100");

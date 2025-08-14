@@ -28,23 +28,6 @@ using System.Reflection;
 namespace Command_Interpreter
 {
 	/// <summary>
-	/// Provides extension methods for working with <see cref="Dictionary{TKey, TValue}"/> objects that have string keys
-	/// and values of type <see cref="List{T}"/> containing tuples of a delegate and a description.
-	/// </summary>
-	//public static class DictionaryExtensions
-	//{
-	//	public static List<(Delegate func, string desc)> GetOrCreateKey(this Dictionary<string, List<(Delegate func, string desc)>> dict, string key)
-	//	{
-	//		if (!dict.TryGetValue(key, out var list))
-	//		{
-	//			list = new List<(Delegate func, string desc)>();
-	//			dict[key] = list;
-	//		}
-	//		return list;
-	//	}
-	//}
-
-	/// <summary>
 	/// Provides functionality for managing and executing commands, including adding, removing, validating, and listing
 	/// commands.
 	/// </summary>
@@ -61,7 +44,6 @@ namespace Command_Interpreter
 
 		public Commands()
 		{
-			//commands.GetOrCreateKey("help").Add((Lista, help));
 			commands["help"] = [(List, help)]; // If the key doesn't exist, create a new list with the function and description.
 		}
 
@@ -173,7 +155,6 @@ namespace Command_Interpreter
 			{
 				if (!commands.TryGetValue(command.ToLower(), out var entry))
 					commands[command.ToLower()] = [(func, info)];
-				//commands.GetOrCreateKey(command.ToLower()).Add((func, info));
 				else
 				{
 					//entry is the function/description list
