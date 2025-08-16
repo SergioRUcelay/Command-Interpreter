@@ -69,7 +69,7 @@ namespace Command_Interpreter
 		public static object[] SeekParams(ParameterInfo[] _methodParams, string[] commandParameters)
 		{
 			int currentToken = 0;
-			List<object> arrayparams = new();
+			List<object> arrayparams = [];
 
 			if (_methodParams.Length == commandParameters.Length)
 			{
@@ -152,6 +152,22 @@ namespace Command_Interpreter
 				throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Int types");
 
 			return returnArraytype;
+		}
+
+		/// <summary>
+		/// Compares the parameter signatures of two methods to determine if they are identical.
+		/// </summary>
+		/// <param name="newFunc">An array of <see cref="ParameterInfo"/> objects representing the parameters of the first method.</param>
+		/// <param name="exixtFunc">An array of <see cref="ParameterInfo"/> objects representing the parameters of the second method.</param>
+		/// <returns><see langword="true"/> if both methods have the same number of parameters and their corresponding parameter types
+		/// match; otherwise, <see langword="false"/>.</returns>
+		public static bool SignatureCompare(ParameterInfo[] newFunc, ParameterInfo[] exixtFunc)
+		{
+			if (newFunc.Length == exixtFunc.Length)
+			{
+				return newFunc.Zip(exixtFunc, (p1, p2) => p1.ParameterType == p2.ParameterType).All(match => match);
+			}
+			return false;
 		}
 	}
 }

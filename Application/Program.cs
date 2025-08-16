@@ -14,7 +14,7 @@ string _IntRest = "Function subtracts two given numbers";
 
 try
 {
-	com.AddFunc("Exit", () => Commands.terminate = true, "Quit the program");
+	com.AddFunc("Exit", () => Ci.Terminate = true, "Quit the program");
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
 	com.AddFunc("Float", (float a, string b) => a + b, _Float);
 	com.AddFunc("Float", (float a) => a + 100, _Float);
@@ -22,9 +22,10 @@ try
 	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
-	com.AddFunc("test", new Func<int, int>(Ci.peich), "Add 100 to int");
-	com.AddFunc("test", new Func<int, int, int>(Ci.peich), "Add int numbers");
-	com.AddFunc("test", new Action(Ci.peich), "Get you a 100");
+	com.AddFunc("test", new Func<int, int>(Ci.Test), "Add 100 to int");
+	com.AddFunc("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
+	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
+	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
 	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
 }
 catch (Exception ex)
@@ -34,7 +35,7 @@ catch (Exception ex)
 
 Console.ForegroundColor = ConsoleColor.DarkGreen;
 Console.WriteLine("Command Interpreter\n\rVersion 1.0\n");
-while (!Commands.terminate)
+while (!Ci.Terminate)
 {
 	Console.ForegroundColor = ConsoleColor.White;
 	Console.Write("Ci console..:> ");

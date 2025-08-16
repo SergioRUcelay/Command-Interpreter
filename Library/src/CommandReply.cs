@@ -80,6 +80,6 @@ namespace Command_Interpreter
 	/// </summary>
 	public class FuncList
 	{
-		public List<FunctionEntry> Entries = new();
+		public List<FunctionEntry> Entries = [];
 	}
 }

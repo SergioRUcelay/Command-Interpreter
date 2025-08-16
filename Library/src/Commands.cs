@@ -34,13 +34,11 @@ namespace Command_Interpreter
 	/// <remarks>The <see cref="Commands"/> class allows users to define commands, execute commands based on user input.</remarks>
 	public class Commands
 	{
-		public static bool terminate = false;
-
 		// Function container.
 		private readonly Dictionary<string, List<(Delegate func, string desc)>> commands = [];
 
 		// This is a string that describes the List function.
-		private readonly string help = "Function for list all functions of all program";
+		private readonly string help = "Function to list all functions registered.";
 
 		public Commands()
 		{
@@ -60,7 +58,7 @@ namespace Command_Interpreter
 				return new CommandReply
 				{
 					Type = CommandReply.LogType.Void,
-					Message = "No function has been called"
+					Message = "Function call failed: empty string received."
 				};
 			}
 			// Search for the Delegate in the list. Command is the first string of the split array and is therefore supposed to be the function.
@@ -142,12 +140,17 @@ namespace Command_Interpreter
 		}
 
 		/// <summary>
-		/// Add a new function to the functions tuple.
+		/// Adds a command and its associated delegate function to the command registry.
 		/// </summary>
-		/// <param name="command">The key for the Dictionary or Map</param>
-		/// <param name="func">The Function that have been add</param>
-		/// <param name="info">The string that describe the function that has been added</param>
-		/// <exception cref="InvalidOperationException"></exception>
+		/// <remarks>This method ensures that the provided delegate function has a valid signature and does not
+		/// conflict with any existing functions registered under the same command. If the command does not already exist in
+		/// the registry, it will be created. Otherwise, the function will be added to the existing command's list of
+		/// associated functions, provided its signature is unique.</remarks>
+		/// <param name="command">The name of the command to register. This value is case-insensitive.</param>
+		/// <param name="func">The delegate function to associate with the command. The function's signature must be valid and unique for the
+		/// given command.</param>
+		/// <param name="info">A description of the command, providing additional context or usage information.</param>
+		/// <exception cref="InvalidOperationException">Thrown if a function with the same name and signature already exists for the specified command.</exception>
 		public void AddFunc(string command, Delegate func, string info)
 		{
 			//Checking that parameters exist and can be parsed
@@ -157,31 +160,23 @@ namespace Command_Interpreter
 					commands[command.ToLower()] = [(func, info)];
 				else
 				{
+					List<bool> check = [];
 					//entry is the function/description list
-					var passFuncparameters = func.GetMethodInfo().GetParameters();
+					var passFuncParameters = func.GetMethodInfo().GetParameters();
 					foreach (var existingFunction in entry)
 					{
 						var exisFuncParamm = existingFunction.func.GetMethodInfo().GetParameters();
-						if (passFuncparameters.Length != exisFuncParamm.Length)
-						{
-							entry.Add((func, info));
-							return;
-						}
+						check.Add(Parameters.SignatureCompare(passFuncParameters, exisFuncParamm));
 					}
-					throw new InvalidOperationException($"Function with name {func.ToString()} exist, function wasn't added.");
+					if (!check.Any(f => f))
+					{
+						entry.Add((func, info));
+						check.Clear();
+					}
+					else
+						throw new InvalidOperationException($"Function with name \"{func.Method.Name}\" exist, function wasn't added.");
 				}
 			}
-		}
-
-		/// <summary>
-		/// Deletes a function from the tuple.
-		/// </summary>
-		/// <param name="name">Name function</param>
-		/// <exception cref="InvalidOperationException"></exception>
-		public void RemoveFunc(string name)
-		{
-			if (!commands.Remove(name))
-				throw new InvalidOperationException($"Function with name {name} don't exist");
 		}
 
 		/// <summary>
