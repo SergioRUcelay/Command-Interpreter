@@ -23,6 +23,7 @@ try
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
 	com.AddFunc("test", new Func<int, int>(Ci.Test), "Add 100 to int");
+	com.AddFunc("test", new Func<float, float>(Ci.Test), "Add 100 to int");
 	com.AddFunc("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
 	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
 	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");

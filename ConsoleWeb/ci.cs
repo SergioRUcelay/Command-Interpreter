@@ -13,7 +13,15 @@
 		{
 			return a + b;
 		}
+		public static int Test(float a, int b)
+		{
+			return b;
+		}
 		public static int Test(int a)
+		{
+			return a - 100;
+		}
+		public static float Test(float a)
 		{
 			return a - 100;
 		}

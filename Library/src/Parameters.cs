@@ -58,6 +58,7 @@ namespace Command_Interpreter
 			return true;
 		}
 
+
 		/// <summary>
 		/// Look for the parameters in the array. If they exist, parse them to the correct type.
 		/// </summary>
@@ -91,7 +92,8 @@ namespace Command_Interpreter
 		/// The method that pases the int type.
 		/// </summary>
 		/// <param name="_parameter"> The string to parse to the int type. </param>
-		/// <returns> The string that matches the int type. </returns>
+		/// <returns> The string that matches the int type.</returns>
+
 		public static int IntType(string _parameter) => int.Parse(_parameter);
 
 		/// <summary>

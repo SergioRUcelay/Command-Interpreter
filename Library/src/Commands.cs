@@ -96,6 +96,10 @@ namespace Command_Interpreter
 						{
 							continue;
 						}
+						catch (TargetInvocationException ex) when (ex.InnerException is FormatException)
+						{
+							continue;
+						}
 
 						var functionReply = methodInfo.Invoke(del.Target, parameters);
 
