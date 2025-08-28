@@ -39,7 +39,9 @@ namespace Command_Interpreter
 		{
 			_params = new Dictionary<string, Delegate>()
 			{
-				{ "Int32", IntType }, { "String", StringType }, { "Boolean", BoolType }, { "Single", FloatType }, {"Int32[]", ArrayIntType}
+				{ "Int32", IntType }, { "String", StringType }, { "Boolean", BoolType },
+				{ "Single", FloatType }, {"Int32[]", ArrayIntType}, { "Double", DoubleType },
+				{ "Single[]", ArrayFloatType }
 			};
 		}
 
@@ -94,14 +96,42 @@ namespace Command_Interpreter
 		/// <param name="_parameter"> The string to parse to the int type. </param>
 		/// <returns> The string that matches the int type.</returns>
 
-		public static int IntType(string _parameter) => int.Parse(_parameter);
+		public static int IntType(string _parameter) 
+		{
+			string intOk = @"^-?\d+$";
+			Match match = Regex.Match(_parameter, intOk);
+			if (match.Success)
+				return int.Parse(match.Groups[0].Value);
+
+			else throw new FormatException("Number must be an correct int.");
+		}
+
+		public static double DoubleType(string _parameter) 
+		{
+			string doubleOk = @"^-?\d+(\.\d+)?$";
+			Match match = Regex.Match(_parameter, doubleOk);
+			if (match.Success)
+				return double.Parse(match.Groups[0].Value);
+
+			throw new FormatException("Number must be an correct decimal.");
+			
+		}
 
 		/// <summary>
 		/// The method that pases the float type.
 		/// </summary>
 		/// <param name="_parameter"> The string to parse to the float type. </param>
 		/// <returns> The string that matches the float type. </returns>
-		public static float FloatType(string _parameter) => float.Parse(_parameter);
+		public static float FloatType(string _parameter)
+		{
+			string floatOk = @"^(\d+(\.\d+)?)f$";
+			Match match = Regex.Match(_parameter, floatOk);
+			
+			if (match.Success)
+				return float.Parse(match.Groups[1].Value);
+
+			throw new FormatException("Number must be an integer or decimal and end with 'f'.");
+		}
 
 		/// <summary>
 		/// The method that pases the bool type.
@@ -118,13 +148,12 @@ namespace Command_Interpreter
 		/// <exception cref="FormatException">Thrown if the input string does not contain a leading hyphen ('-').</exception>
 		public static string StringType(string _parameter)
 		{
-			string stringtype;
+			string pattern = @"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$";
+			Match match = Regex.Match(_parameter,pattern);
+			if (match.Success)
+				return match.Groups[1].ToString();
 
-			if (_parameter.Contains('-'))
-				stringtype = _parameter.Trim('-');
-			else throw new FormatException("The strings must be preceded with \"-\".");
-
-			return stringtype;
+			throw new FormatException("Strings must be enclosed in quotation marks.");
 		}
 
 		/// <summary>
@@ -137,21 +166,44 @@ namespace Command_Interpreter
 		/// and the elements must be separated by commas (",") without spaces or periods.</exception>
 		public static int[] ArrayIntType(string _parameter)
 		{
+			Match match = Regex.Match(_parameter, @"^\[(-?\d+)(?:,(-?\d+))*\]$");
 			int[] returnArraytype;
-			Match match = Regex.Match(_parameter, @"(?<=\[\s*)\d+(?:,+\d+)*(?=\s*\])");
+
 			if (match.Success)
 			{
-				var stringArray = _parameter.Replace("[", "").Replace("]", "").Replace(".", ",");
-				var arraytype = stringArray.Split(',');
-				returnArraytype = new int[arraytype.Length];
-				for (int i = 0; i <= arraytype.Length - 1; i++)
+				returnArraytype = new int [match.Groups[1].Length + match.Groups[2].Captures.Count];
+				returnArraytype[0] = IntType(match.Groups[1].Value.ToString());
+				var groupTwoCapture = match.Groups[2].Captures;
+				for (int i = 0; i < groupTwoCapture.Count; i++)
 				{
-					var converttoint = IntType(arraytype[i]);
-					returnArraytype[i] = converttoint;
+					var converttoint = IntType(groupTwoCapture[i].Value.ToString());
+					returnArraytype[i + 1] = converttoint;
 				}
 			}
 			else
 				throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Int types");
+
+			return returnArraytype;
+		}
+
+		public static float[] ArrayFloatType(string _parameter)
+		{
+			Match match = Regex.Match(_parameter, @"^\[(-?\d+(\.\d+)?f)(?:,(-?\d+(\.\d+)?f))*\]$");
+			float[] returnArraytype;
+
+			if (match.Success)
+			{
+				returnArraytype = new float[match.Groups[1].Length + match.Groups[2].Captures.Count];
+				returnArraytype[0] = FloatType(match.Groups[1].Value.ToString());
+				var groupTwoCapture = match.Groups[2].Captures;
+				for (int i = 0; i < groupTwoCapture.Count; i++)
+				{
+					var converttoint = FloatType(groupTwoCapture[i].Value.ToString());
+					returnArraytype[i + 1] = converttoint;
+				}
+			}
+			else
+				throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Float types");
 
 			return returnArraytype;
 		}

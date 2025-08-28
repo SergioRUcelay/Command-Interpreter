@@ -7,10 +7,11 @@ using System.Xml.Xsl;
 Commands com = new();
 string _Int = "function that adds the given numbers.";
 string _String = "Function accepting string chains";
-string _Array = "Function accepting Arrays of int";
+string _Array = "Function accepting arrays of int";
 string _Float = "Function accepting float numbers";
 string _Bool = "Function accepting bool values";
 string _IntRest = "Function subtracts two given numbers";
+string _Double = "Function accepting double numbers";
 
 try
 {
@@ -18,6 +19,7 @@ try
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
 	com.AddFunc("Float", (float a, string b) => a + b, _Float);
 	com.AddFunc("Float", (float a) => a + 100, _Float);
+	com.AddFunc("ArrayFloat", (float[] a) => a[1], _Float);
 	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
@@ -25,9 +27,12 @@ try
 	com.AddFunc("test", new Func<int, int>(Ci.Test), "Add 100 to int");
 	com.AddFunc("test", new Func<float, float>(Ci.Test), "Add 100 to int");
 	com.AddFunc("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
+	com.AddFunc("test", new Func<float, int, float>(Ci.Test), "Subtracs int to float");
+	com.AddFunc("double", (double d) => d, _Double);
+	com.AddFunc("test", new Func<float, double, double>(Ci.Test), "Subtracs float to double");
 	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
 	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
-	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
+	
 }
 catch (Exception ex)
 {

@@ -13,9 +13,14 @@
 		{
 			return a + b;
 		}
-		public static int Test(float a, int b)
+		public static float Test(float a, int b)
 		{
-			return b;
+			return b - a;
+		}
+
+		public static double Test(float a, double b)
+		{
+			return a - b;
 		}
 		public static int Test(int a)
 		{

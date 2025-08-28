@@ -98,6 +98,12 @@ namespace Command_Interpreter
 						}
 						catch (TargetInvocationException ex) when (ex.InnerException is FormatException)
 						{
+							return new CommandReply
+							{
+								Type = CommandReply.LogType.Error,
+								FunctionCalled = verb,
+								Message = ex.InnerException.Message.ToString()
+							};
 							continue;
 						}
 
