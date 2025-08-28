@@ -16,12 +16,12 @@ string _Double = "Function accepting double numbers";
 try
 {
 	com.AddFunc("Exit", () => Ci.Terminate = true, "Quit the program");
+	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
+	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("Float", (float a, string b) => a + b, _Float);
 	com.AddFunc("Float", (float a) => a + 100, _Float);
 	com.AddFunc("ArrayFloat", (float[] a) => a[1], _Float);
-	com.AddFunc("Int", (int p, int f) => p + f, _Int);
-	com.AddFunc("Bool", (bool value) => value, _Bool);
 	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
 	com.AddFunc("Array", (int[] code) => code, _Array);
 	com.AddFunc("test", new Func<int, int>(Ci.Test), "Add 100 to int");

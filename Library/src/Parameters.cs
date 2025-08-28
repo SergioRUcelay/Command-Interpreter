@@ -33,15 +33,20 @@ namespace Command_Interpreter
 	/// </summary>
 	internal class Parameters
 	{
-		private static readonly Dictionary<string, Delegate> _params;
+		public delegate object Parser(GroupCollection groups);
 
-		static Parameters()
+		private static readonly Dictionary<string, (string regex, Parser parser)> _params;
+
+		static Parameters() 
 		{
-			_params = new Dictionary<string, Delegate>()
-			{
-				{ "Int32", IntType }, { "String", StringType }, { "Boolean", BoolType },
-				{ "Single", FloatType }, {"Int32[]", ArrayIntType}, { "Double", DoubleType },
-				{ "Single[]", ArrayFloatType }
+			_params = new() {
+				{ "Int32",		(@"^-?\d+$",								groups => int.Parse(groups[0].Value))},
+				{ "String",		(@"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$",	groups => groups[1].Value )},
+				{ "Boolean",	(@"\b(?:true|false)\b",						groups => bool.Parse(groups[0].Value))},
+				//{ "Single", FloatType },
+				//{ "Int32[]", ArrayIntType},
+				//{ "Double", DoubleType },
+				//{ "Single[]", ArrayFloatType }
 			};
 		}
 
@@ -54,7 +59,7 @@ namespace Command_Interpreter
 		{
 			foreach (var currentParam in _methodInfo.GetParameters())
 			{
-				if (!_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
+				if (!_params.TryGetValue(currentParam.ParameterType.Name, out (string regex, Parser parser) dictionaryFunc))
 					throw new FormatException($"Can't parse parameter {currentParam.Name} of type {currentParam.ParameterType.Name} in function {_methodInfo.Name}");
 			}
 			return true;
@@ -78,11 +83,23 @@ namespace Command_Interpreter
 			{
 				foreach (var currentParam in _methodParams)
 				{
-					if (_params.TryGetValue(currentParam.ParameterType.Name, out Delegate? dictionaryFunc))
+					if (_params.TryGetValue(currentParam.ParameterType.Name, out (string regex, Parser parser) dictionaryFunc))
 					{
-						var parseParam = dictionaryFunc.DynamicInvoke(commandParameters[currentToken++]);
-						if (parseParam != null)
-							arrayparams.Add(parseParam);
+						Match match = Regex.Match(commandParameters[currentToken++], dictionaryFunc.regex);
+						if (match.Success)
+						{
+							try
+							{
+								var parseParam = dictionaryFunc.parser.DynamicInvoke(match.Groups);
+
+								if (parseParam != null)
+									arrayparams.Add(parseParam);
+							}
+							catch (Exception)
+							{ 
+								throw new FormatException("Number must be an correct int.");
+							}
+						}
 					}
 				}
 				return arrayparams.ToArray();
@@ -96,15 +113,11 @@ namespace Command_Interpreter
 		/// <param name="_parameter"> The string to parse to the int type. </param>
 		/// <returns> The string that matches the int type.</returns>
 
-		public static int IntType(string _parameter) 
-		{
-			string intOk = @"^-?\d+$";
-			Match match = Regex.Match(_parameter, intOk);
-			if (match.Success)
-				return int.Parse(match.Groups[0].Value);
+		//public static int IntType(GroupCollection groups) 
+		//{
+		//		return int.Parse(groups[0].Value);
 
-			else throw new FormatException("Number must be an correct int.");
-		}
+		//}
 
 		public static double DoubleType(string _parameter) 
 		{
@@ -138,7 +151,7 @@ namespace Command_Interpreter
 		/// </summary>
 		/// <param name="_parameter"> The string to parse to the bool type. </param>
 		/// <returns> The string that matches the bool type. </returns>
-		public static bool BoolType(string _parameter) => bool.Parse(_parameter);
+		//public static bool BoolType(string _parameter) => bool.Parse(_parameter);
 
 		/// <summary>
 		/// Extracts the string value by removing the leading hyphen ('-') from the specified parameter.
@@ -146,15 +159,15 @@ namespace Command_Interpreter
 		/// <param name="_parameter">The input string, which must begin with a hyphen ('-').</param>
 		/// <returns>A string with the leading hyphen removed from the input parameter.</returns>
 		/// <exception cref="FormatException">Thrown if the input string does not contain a leading hyphen ('-').</exception>
-		public static string StringType(string _parameter)
-		{
-			string pattern = @"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$";
-			Match match = Regex.Match(_parameter,pattern);
-			if (match.Success)
-				return match.Groups[1].ToString();
+		//public static string StringType(string _parameter)
+		//{
+		//	string pattern = @"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$";
+		//	Match match = Regex.Match(_parameter,pattern);
+		//	if (match.Success)
+		//		return match.Groups[1].ToString();
 
-			throw new FormatException("Strings must be enclosed in quotation marks.");
-		}
+		//	throw new FormatException("Strings must be enclosed in quotation marks.");
+		//}
 
 		/// <summary>
 		/// Converts a string representation of an array of integers into an actual integer array.
@@ -164,27 +177,27 @@ namespace Command_Interpreter
 		/// <returns>An array of integers parsed from the input string.</returns>
 		/// <exception cref="FormatException">Thrown if the input string is not properly formatted. The string must be enclosed in square brackets ("[ ]")
 		/// and the elements must be separated by commas (",") without spaces or periods.</exception>
-		public static int[] ArrayIntType(string _parameter)
-		{
-			Match match = Regex.Match(_parameter, @"^\[(-?\d+)(?:,(-?\d+))*\]$");
-			int[] returnArraytype;
+		//public static int[] ArrayIntType(string _parameter)
+		//{
+		//	Match match = Regex.Match(_parameter, @"^\[(-?\d+)(?:,(-?\d+))*\]$");
+		//	int[] returnArraytype;
 
-			if (match.Success)
-			{
-				returnArraytype = new int [match.Groups[1].Length + match.Groups[2].Captures.Count];
-				returnArraytype[0] = IntType(match.Groups[1].Value.ToString());
-				var groupTwoCapture = match.Groups[2].Captures;
-				for (int i = 0; i < groupTwoCapture.Count; i++)
-				{
-					var converttoint = IntType(groupTwoCapture[i].Value.ToString());
-					returnArraytype[i + 1] = converttoint;
-				}
-			}
-			else
-				throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Int types");
+		//	if (match.Success)
+		//	{
+		//		returnArraytype = new int [match.Groups[1].Length + match.Groups[2].Captures.Count];
+		//		returnArraytype[0] = IntType(match.Groups[1].Value);
+		//		var groupTwoCapture = match.Groups[2].Captures;
+		//		for (int i = 0; i < groupTwoCapture.Count; i++)
+		//		{
+		//			var converttoint = IntType(groupTwoCapture[i].Value);
+		//			returnArraytype[i + 1] = converttoint;
+		//		}
+		//	}
+		//	else
+		//		throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Int types");
 
-			return returnArraytype;
-		}
+		//	return returnArraytype;
+		//}
 
 		public static float[] ArrayFloatType(string _parameter)
 		{
@@ -194,11 +207,11 @@ namespace Command_Interpreter
 			if (match.Success)
 			{
 				returnArraytype = new float[match.Groups[1].Length + match.Groups[2].Captures.Count];
-				returnArraytype[0] = FloatType(match.Groups[1].Value.ToString());
+				returnArraytype[0] = FloatType(match.Groups[1].Value);
 				var groupTwoCapture = match.Groups[2].Captures;
 				for (int i = 0; i < groupTwoCapture.Count; i++)
 				{
-					var converttoint = FloatType(groupTwoCapture[i].Value.ToString());
+					var converttoint = FloatType(groupTwoCapture[i].Value);
 					returnArraytype[i + 1] = converttoint;
 				}
 			}
