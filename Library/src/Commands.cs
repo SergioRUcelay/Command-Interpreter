@@ -23,7 +23,10 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using System.Diagnostics;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using static Command_Interpreter.Parameters;
 
 namespace Command_Interpreter
 {
@@ -39,6 +42,7 @@ namespace Command_Interpreter
 
 		// This is a string that describes the List function.
 		private readonly string help = "Function to list all functions registered.";
+
 
 		public Commands()
 		{
@@ -61,92 +65,83 @@ namespace Command_Interpreter
 					Message = "Function call failed: empty string received."
 				};
 			}
-			// Search for the Delegate in the list. Command is the first string of the split array and is therefore supposed to be the function.
-			// Create an array of strings from a console string.
-			string[] textConsole = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-			// This is the array of the parameters.
-			string[] consoleParameter = textConsole[1..];
-			// This is a string that contains the name of a function.
-			string verb = textConsole[0].ToLower();
-			try
-			{
-				if (!commands.TryGetValue(verb, out List<(Delegate func, string desc)>? _CalledFunctions))
-				{
-					return new CommandReply
-					{
-						Type = CommandReply.LogType.Error,
-						Message = $"Command \"{verb}\" doesn't exist.",
-					};
-				}
-				else
-				{
-					foreach ((Delegate del, string desc) in _CalledFunctions)
-					{
-						//find if any delegate has the same number of parameters as the incoming string array (the parsed parameters from the command line)
-						MethodInfo methodInfo = del.GetMethodInfo();
-						var methodInfoParams = methodInfo.GetParameters();
-						object[] parameters;
-						try
-						{
-							parameters = Parameters.SeekParams(methodInfoParams, consoleParameter);
-							if (methodInfoParams.Length != parameters.Length)
-								break;
-						}
-						catch (TargetParameterCountException)
-						{
-							continue;
-						}
-						catch (TargetInvocationException ex) when (ex.InnerException is FormatException)
-						{
-							return new CommandReply
-							{
-								Type = CommandReply.LogType.Error,
-								FunctionCalled = verb,
-								Message = ex.InnerException.Message.ToString()
-							};
-							continue;
-						}
 
-						var functionReply = methodInfo.Invoke(del.Target, parameters);
-
-						return new CommandReply
-						{
-							Type = CommandReply.LogType.Success,
-							Return = functionReply,
-							FunctionCalled = verb
-						};
-					}
-					throw new TargetParameterCountException();
-				}
-
-			}
-			catch (TargetParameterCountException ex)
+			var verb = Regex.Match(command, @"^\S+").Value.ToLower();
+			if (!commands.TryGetValue(verb, out List<(Delegate func, string desc)>? _CalledFunctions))
 			{
 				return new CommandReply
 				{
 					Type = CommandReply.LogType.Error,
-					FunctionCalled = verb,
-					Message = ex.Message.ToString()
+					Message = $"Command \"{verb}\" doesn't exist.",
 				};
 			}
-			catch (TargetInvocationException ex)
+
+			//Command parsing and paramter extraction
+			List<object> arrayparams = [];
+			command = command.Substring(verb.Length);
+
+			while (command.Length > 0)
 			{
-				if (ex.InnerException is not null)
+				// Remove tabs and white spaces.
+				command = Regex.Replace(command, @"^\s+|\s+$", "");
+				int length = command.Length;
+
+				foreach ((string regex, Parser parser) in _params.Values)
+				{
+					var matchParam = Regex.Match(command, regex);
+					if (matchParam.Success)
+					{
+						Debug.Assert(command.Length == length);
+						Debug.Assert(matchParam.Index == 0);
+						arrayparams.Add(parser(matchParam.Groups));
+						command = command.Substring(matchParam.Length);
+					}
+				}
+				if (command.Length == length)
+				{
+					var nextWord = Regex.Match(command, @"^\S+").Value;
+					throw new Exception($"Syntax error, can't parse {nextWord}");
+				}
+			}
+			//method match and actual invocation
+			foreach ((Delegate del, string desc) in _CalledFunctions)
+			{
+				//find if any delegate has the same number of parameters as the incoming string array (the parsed parameters from the command line)
+				MethodInfo methodInfo = del.GetMethodInfo();
+				var methodInfoParams = methodInfo.GetParameters();
+				object[] parameters = arrayparams.ToArray();
+
+				if (methodInfoParams.Length != parameters.Length)
+					continue;
+
+				if (!methodInfoParams.Zip(parameters, (p1, p2) => p1.ParameterType == p2.GetType()).All(match => match))
+					continue;
+				try
+				{
+					var functionReply = methodInfo.Invoke(del.Target, parameters);
+					return new CommandReply
+					{
+						Type = CommandReply.LogType.Success,
+						Return = functionReply,
+						FunctionCalled = verb
+					};
+				}
+				catch (TargetInvocationException ex)
 				{
 					return new CommandReply
 					{
 						Type = CommandReply.LogType.Error,
 						FunctionCalled = verb,
-						Message = ex.InnerException.Message,
+						Message = ex.Message
 					};
 				}
-				else return new CommandReply
-				{
-					Type = CommandReply.LogType.Error,
-					FunctionCalled = verb,
-					Message = ex.Message,
-				};
 			}
+			return new CommandReply
+			{
+				Type = CommandReply.LogType.Error,
+				FunctionCalled = verb,
+				Message = "No function has been called."
+			};
 		}
 
 		/// <summary>
@@ -176,7 +171,7 @@ namespace Command_Interpreter
 					foreach (var existingFunction in entry)
 					{
 						var exisFuncParamm = existingFunction.func.GetMethodInfo().GetParameters();
-						check.Add(Parameters.SignatureCompare(passFuncParameters, exisFuncParamm));
+						check.Add(SignatureCompare(passFuncParameters, exisFuncParamm));
 					}
 					if (!check.Any(f => f))
 					{

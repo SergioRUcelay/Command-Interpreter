@@ -35,14 +35,14 @@ namespace Command_Interpreter
 	{
 		public delegate object Parser(GroupCollection groups);
 
-		private static readonly Dictionary<string, (string regex, Parser parser)> _params;
+		 public static readonly Dictionary<string, (string regex, Parser parser)> _params;
 
 		static Parameters() 
 		{
 			_params = new() {
-				{ "Int32",		(@"^-?\d+$",								groups => int.Parse(groups[0].Value))},
-				{ "String",		(@"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$",	groups => groups[1].Value )},
-				{ "Boolean",	(@"\b(?:true|false)\b",						groups => bool.Parse(groups[0].Value))},
+				{ "Int32",		(@"^-?\d+",									groups => int.Parse(groups[0].Value))},
+				{ "String",		(@"""([^""]*)""",   groups => groups[1].Value )},
+				{ "Boolean",	(@"^\b(?:true|false)\b",					groups => bool.Parse(groups[0].Value))},
 				//{ "Single", FloatType },
 				//{ "Int32[]", ArrayIntType},
 				//{ "Double", DoubleType },
@@ -74,38 +74,38 @@ namespace Command_Interpreter
 		/// <returns> The array with the parameters. </returns>
 		/// <exception cref="TargetParameterCountException"></exception>
 
-		public static object[] SeekParams(ParameterInfo[] _methodParams, string[] commandParameters)
-		{
-			int currentToken = 0;
-			List<object> arrayparams = [];
+		//public static object[] SeekParams(ParameterInfo[] _methodParams, string[] commandParameters)
+		//{
+		//	int currentToken = 0;
+		//	List<object> arrayparams = [];
 
-			if (_methodParams.Length == commandParameters.Length)
-			{
-				foreach (var currentParam in _methodParams)
-				{
-					if (_params.TryGetValue(currentParam.ParameterType.Name, out (string regex, Parser parser) dictionaryFunc))
-					{
-						Match match = Regex.Match(commandParameters[currentToken++], dictionaryFunc.regex);
-						if (match.Success)
-						{
-							try
-							{
-								var parseParam = dictionaryFunc.parser.DynamicInvoke(match.Groups);
+		//	if (_methodParams.Length == commandParameters.Length)
+		//	{
+		//		foreach (var currentParam in _methodParams)
+		//		{
+		//			if (_params.TryGetValue(currentParam.ParameterType.Name, out (string regex, Parser parser) dictionaryFunc))
+		//			{
+		//				Match match = Regex.Match(commandParameters[currentToken++], dictionaryFunc.regex);
+		//				if (match.Success)
+		//				{
+		//					try
+		//					{
+		//						var parseParam = dictionaryFunc.parser.DynamicInvoke(match.Groups);
 
-								if (parseParam != null)
-									arrayparams.Add(parseParam);
-							}
-							catch (Exception)
-							{ 
-								throw new FormatException("Number must be an correct int.");
-							}
-						}
-					}
-				}
-				return arrayparams.ToArray();
-			}
-			throw new TargetParameterCountException();
-		}
+		//						if (parseParam != null)
+		//							arrayparams.Add(parseParam);
+		//					}
+		//					catch (Exception)
+		//					{ 
+		//						throw new FormatException("Number must be an correct int.");
+		//					}
+		//				}
+		//			}
+		//		}
+		//		return arrayparams.ToArray();
+		//	}
+		//	throw new TargetParameterCountException();
+		//}
 
 		/// <summary>
 		/// The method that pases the int type.
@@ -161,7 +161,7 @@ namespace Command_Interpreter
 		/// <exception cref="FormatException">Thrown if the input string does not contain a leading hyphen ('-').</exception>
 		//public static string StringType(string _parameter)
 		//{
-		//	string pattern = @"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$";
+	//		string pattern = @"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$";
 		//	Match match = Regex.Match(_parameter,pattern);
 		//	if (match.Success)
 		//		return match.Groups[1].ToString();
