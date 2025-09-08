@@ -19,19 +19,19 @@ try
 	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
 	com.AddFunc("Bool", (bool value) => value, _Bool);
-	com.AddFunc("Float", (float a, string b) => a + b, _Float);
-	com.AddFunc("Float", (float a) => a + 100, _Float);
-	com.AddFunc("ArrayFloat", (float[] a) => a[1], _Float);
-	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
-	com.AddFunc("Array", (int[] code) => code, _Array);
-	com.AddFunc("test", new Func<int, int>(Ci.Test), "Add 100 to int");
-	com.AddFunc("test", new Func<float, float>(Ci.Test), "Add 100 to int");
-	com.AddFunc("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
-	com.AddFunc("test", new Func<float, int, float>(Ci.Test), "Subtracs int to float");
-	com.AddFunc("double", (double d) => d, _Double);
-	com.AddFunc("test", new Func<float, double, double>(Ci.Test), "Subtracs float to double");
-	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
-	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
+	com.AddFunc("Float", (float a, float b) => a + b, _Float);
+	com.AddFunc("double", (double d, double c) => d + c, _Double);
+	//com.AddFunc("Float", (float a) => a + 100, _Float);
+	////com.AddFunc("ArrayFloat", (float[] a) => a[1], _Float);
+	//com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
+	////com.AddFunc("Arratesy", (int[] code) => code, _Array);
+	//com.AddFunc("test", new Func<int, int>(Ci.Test), "Add 10 to int");
+	//com.AddFunc("test", new Func<float, float>(Ci.Test), "Add 100 to int");
+	//com.AddFunc("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
+	//com.AddFunc("test", new Func<float, int, float>(Ci.Test), "Subtracs int to float");
+	//com.AddFunc("test", new Func<float, double, double>(Ci.Test), "Subtracs float to double");
+	//com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
+	//com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
 	
 }
 catch (Exception ex)

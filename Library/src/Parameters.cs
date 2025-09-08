@@ -40,12 +40,12 @@ namespace Command_Interpreter
 		static Parameters() 
 		{
 			_params = new() {
-				{ "Int32",		(@"^-?\d+",									groups => int.Parse(groups[0].Value))},
-				{ "String",		(@"""([^""]*)""",   groups => groups[1].Value )},
-				{ "Boolean",	(@"^\b(?:true|false)\b",					groups => bool.Parse(groups[0].Value))},
-				//{ "Single", FloatType },
+				{ "Int32",		(@"^\d+(?=\s|$)",				groups => int.Parse(groups[0].Value))},
+				{ "String",		(@"""([^""]*)""",			groups => groups[1].Value )},
+				{ "Boolean",	(@"^\b(?:true|false)\b",	groups => bool.Parse(groups[0].Value))},
+				{ "Double",		(@"^(-?\d+(?:\.\d+)?)([dD])",	groups => double.Parse(groups[1].Value)) },
+				{ "Single",		(@"^(-?\d+(?:\.\d+)?)([fF])",	groups => float.Parse(groups[1].Value)) },
 				//{ "Int32[]", ArrayIntType},
-				//{ "Double", DoubleType },
 				//{ "Single[]", ArrayFloatType }
 			};
 		}

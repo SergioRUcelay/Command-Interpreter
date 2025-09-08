@@ -43,7 +43,6 @@ namespace Command_Interpreter
 		// This is a string that describes the List function.
 		private readonly string help = "Function to list all functions registered.";
 
-
 		public Commands()
 		{
 			commands["help"] = [(List, help)]; // If the key doesn't exist, create a new list with the function and description.
@@ -56,6 +55,9 @@ namespace Command_Interpreter
 		/// <returns></returns>
 		public CommandReply Command(string command)
 		{
+			// Remove all whitespace in the beginning of the string.
+			command = command.TrimStart();
+
 			// Checks if verb is null. And return a error message if it is null.
 			if (string.IsNullOrEmpty(command))
 			{
@@ -80,6 +82,20 @@ namespace Command_Interpreter
 			List<object> arrayparams = [];
 			command = command.Substring(verb.Length);
 
+			// Check if the verb need parameters. If the verb don't need it, and the command string send it, we don't continue.
+			var funcVerb = commands[verb].FirstOrDefault().func.GetMethodInfo().GetParameters();
+			if (funcVerb.Length == 0 && command.Length != 0)
+			{
+				return new CommandReply
+				{
+					Type = CommandReply.LogType.Error,
+					FunctionCalled = verb,
+					Message = $"The \"{verb}\" no need parameters."
+
+				};
+			}
+
+			// Analyze and structure the command line without the verb.
 			while (command.Length > 0)
 			{
 				// Remove tabs and white spaces.
@@ -94,25 +110,38 @@ namespace Command_Interpreter
 						Debug.Assert(command.Length == length);
 						Debug.Assert(matchParam.Index == 0);
 						arrayparams.Add(parser(matchParam.Groups));
-						command = command.Substring(matchParam.Length);
+						command =  command.Substring(matchParam.Length);
 					}
 				}
 				if (command.Length == length)
 				{
 					var nextWord = Regex.Match(command, @"^\S+").Value;
-					throw new Exception($"Syntax error, can't parse {nextWord}");
+					return new CommandReply
+					{
+						Type = CommandReply.LogType.Error,
+						Message = $"Syntax error, can't parse \"{nextWord}\"."
+
+					};
 				}
 			}
-			//method match and actual invocation
+			// Method match and actual invocation.
 			foreach ((Delegate del, string desc) in _CalledFunctions)
 			{
-				//find if any delegate has the same number of parameters as the incoming string array (the parsed parameters from the command line)
+				// Find if any delegate has the same number of parameters as the incoming string array (the parsed parameters from the command line).
 				MethodInfo methodInfo = del.GetMethodInfo();
 				var methodInfoParams = methodInfo.GetParameters();
 				object[] parameters = arrayparams.ToArray();
 
-				if (methodInfoParams.Length != parameters.Length)
-					continue;
+				if(methodInfoParams.Length != parameters.Length)
+				{
+					return new CommandReply
+					{
+						Type = CommandReply.LogType.Error,
+						FunctionCalled = verb,
+						Message = $"The \"{ verb }\" function requires one or more parameters."
+
+					};
+				}
 
 				if (!methodInfoParams.Zip(parameters, (p1, p2) => p1.ParameterType == p2.GetType()).All(match => match))
 					continue;
@@ -159,7 +188,7 @@ namespace Command_Interpreter
 		public void AddFunc(string command, Delegate func, string info)
 		{
 			//Checking that parameters exist and can be parsed
-			if (Parameters.ValidateParams(func.GetMethodInfo()))
+			if (ValidateParams(func.GetMethodInfo()))
 			{
 				if (!commands.TryGetValue(command.ToLower(), out var entry))
 					commands[command.ToLower()] = [(func, info)];

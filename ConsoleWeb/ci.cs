@@ -24,7 +24,7 @@
 		}
 		public static int Test(int a)
 		{
-			return a - 100;
+			return a - 10;
 		}
 		public static float Test(float a)
 		{
