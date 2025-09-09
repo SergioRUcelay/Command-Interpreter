@@ -24,6 +24,7 @@
 #endregion
 
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using static Command_Interpreter.Parameters;
@@ -42,10 +43,12 @@ namespace Command_Interpreter
 
 		// This is a string that describes the List function.
 		private readonly string help = "Function to list all functions registered.";
+		private readonly string helpCommand = "Function to list all functions for a command.";
+
 
 		public Commands()
 		{
-			commands["help"] = [(List, help)]; // If the key doesn't exist, create a new list with the function and description.
+			commands["help"] = [(List, help), (ListCommand, helpCommand)]; // If the key doesn't exist, create a new list with the function and description.
 		}
 
 		/// <summary>
@@ -55,8 +58,8 @@ namespace Command_Interpreter
 		/// <returns></returns>
 		public CommandReply Command(string command)
 		{
-			// Remove all whitespace in the beginning of the string.
-			command = command.TrimStart();
+			// Remove all whitespace in the ends of the string.
+			command = command.TrimStart().Trim();
 
 			// Checks if verb is null. And return a error message if it is null.
 			if (string.IsNullOrEmpty(command))
@@ -81,19 +84,6 @@ namespace Command_Interpreter
 			//Command parsing and paramter extraction
 			List<object> arrayparams = [];
 			command = command.Substring(verb.Length);
-
-			// Check if the verb need parameters. If the verb don't need it, and the command string send it, we don't continue.
-			var funcVerb = commands[verb].FirstOrDefault().func.GetMethodInfo().GetParameters();
-			if (funcVerb.Length == 0 && command.Length != 0)
-			{
-				return new CommandReply
-				{
-					Type = CommandReply.LogType.Error,
-					FunctionCalled = verb,
-					Message = $"The \"{verb}\" no need parameters."
-
-				};
-			}
 
 			// Analyze and structure the command line without the verb.
 			while (command.Length > 0)
@@ -132,19 +122,10 @@ namespace Command_Interpreter
 				var methodInfoParams = methodInfo.GetParameters();
 				object[] parameters = arrayparams.ToArray();
 
-				if(methodInfoParams.Length != parameters.Length)
-				{
-					return new CommandReply
-					{
-						Type = CommandReply.LogType.Error,
-						FunctionCalled = verb,
-						Message = $"The \"{ verb }\" function requires one or more parameters."
-
-					};
-				}
-
-				if (!methodInfoParams.Zip(parameters, (p1, p2) => p1.ParameterType == p2.GetType()).All(match => match))
+				if(	(methodInfoParams.Length != parameters.Length) ||
+					(!methodInfoParams.Zip(parameters, (p1, p2) => p1.ParameterType == p2.GetType()).All(match => match)))
 					continue;
+
 				try
 				{
 					var functionReply = methodInfo.Invoke(del.Target, parameters);
@@ -169,7 +150,7 @@ namespace Command_Interpreter
 			{
 				Type = CommandReply.LogType.Error,
 				FunctionCalled = verb,
-				Message = "No function has been called."
+				Message = $"No matching signature for: \"{verb}\" with ({String.Join(", ", arrayparams.Select(value => value.GetType().Name))}), type help for available functions."
 			};
 		}
 
@@ -223,18 +204,23 @@ namespace Command_Interpreter
 		private FuncList List()
 		{
 			FuncList list = new();
-
 			foreach (var key in commands.Keys)
-			{
-				foreach ((Delegate del, string desc) in commands[key])
-				{
-					var ret = del.GetMethodInfo().ReturnType.ToString();
-					List<string> args = new();
-					foreach (var parameter in del.GetMethodInfo().GetParameters())
-						args.Add(parameter.ParameterType.Name);
+				list.Entries.AddRange(ListCommand(key).Entries);
 
-					list.Entries.Add(new FunctionEntry(key, desc, args.ToArray(), ret));
-				}
+			return list;
+		}
+
+		FuncList ListCommand(string command)
+		{
+			FuncList list = new();
+			foreach ((Delegate del, string desc) in commands[command])
+			{
+				var ret = del.GetMethodInfo().ReturnType.ToString();
+				List<string> args = new();
+				foreach (var parameter in del.GetMethodInfo().GetParameters())
+					args.Add(parameter.ParameterType.Name);
+
+				list.Entries.Add(new FunctionEntry(command, desc, args.ToArray(), ret));
 			}
 			return list;
 		}

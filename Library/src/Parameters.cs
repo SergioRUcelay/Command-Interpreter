@@ -40,13 +40,13 @@ namespace Command_Interpreter
 		static Parameters() 
 		{
 			_params = new() {
-				{ "Int32",		(@"^\d+(?=\s|$)",				groups => int.Parse(groups[0].Value))},
-				{ "String",		(@"""([^""]*)""",			groups => groups[1].Value )},
-				{ "Boolean",	(@"^\b(?:true|false)\b",	groups => bool.Parse(groups[0].Value))},
-				{ "Double",		(@"^(-?\d+(?:\.\d+)?)([dD])",	groups => double.Parse(groups[1].Value)) },
-				{ "Single",		(@"^(-?\d+(?:\.\d+)?)([fF])",	groups => float.Parse(groups[1].Value)) },
-				//{ "Int32[]", ArrayIntType},
-				//{ "Single[]", ArrayFloatType }
+				{ "Int32",			(@"^\d+(?=\s|$)",				groups => int.Parse(groups[0].Value))},
+				{ "Boolean",		(@"^\b(?:true|false)\b",		groups => bool.Parse(groups[0].Value))},
+				{ "Double",			(@"^(-?\d+(?:\.\d+)?)([dD])",	groups => double.Parse(groups[1].Value)) },
+				{ "Single",			(@"^(-?\d+(?:\.\d+)?)([fF])",	groups => float.Parse(groups[1].Value)) },
+				{ "String",			(@"""([^""]*)""",				groups => groups[1].Value )},
+				{ "Int32[]",       (@"^\[(-?\d+)(?:,(-?\d+))*\]$", ArrayIntType)},
+				{ "UnquotedString",	(@"^(\S+)",						groups => groups[1].Value )},
 			};
 		}
 
@@ -67,109 +67,6 @@ namespace Command_Interpreter
 
 
 		/// <summary>
-		/// Look for the parameters in the array. If they exist, parse them to the correct type.
-		/// </summary>
-		/// <param name="_methodParams"> The function that contains the parameter to look for. </param>
-		/// <param name="commandParameters"> The array that contains the strings that match with the parameter type. </param>
-		/// <returns> The array with the parameters. </returns>
-		/// <exception cref="TargetParameterCountException"></exception>
-
-		//public static object[] SeekParams(ParameterInfo[] _methodParams, string[] commandParameters)
-		//{
-		//	int currentToken = 0;
-		//	List<object> arrayparams = [];
-
-		//	if (_methodParams.Length == commandParameters.Length)
-		//	{
-		//		foreach (var currentParam in _methodParams)
-		//		{
-		//			if (_params.TryGetValue(currentParam.ParameterType.Name, out (string regex, Parser parser) dictionaryFunc))
-		//			{
-		//				Match match = Regex.Match(commandParameters[currentToken++], dictionaryFunc.regex);
-		//				if (match.Success)
-		//				{
-		//					try
-		//					{
-		//						var parseParam = dictionaryFunc.parser.DynamicInvoke(match.Groups);
-
-		//						if (parseParam != null)
-		//							arrayparams.Add(parseParam);
-		//					}
-		//					catch (Exception)
-		//					{ 
-		//						throw new FormatException("Number must be an correct int.");
-		//					}
-		//				}
-		//			}
-		//		}
-		//		return arrayparams.ToArray();
-		//	}
-		//	throw new TargetParameterCountException();
-		//}
-
-		/// <summary>
-		/// The method that pases the int type.
-		/// </summary>
-		/// <param name="_parameter"> The string to parse to the int type. </param>
-		/// <returns> The string that matches the int type.</returns>
-
-		//public static int IntType(GroupCollection groups) 
-		//{
-		//		return int.Parse(groups[0].Value);
-
-		//}
-
-		public static double DoubleType(string _parameter) 
-		{
-			string doubleOk = @"^-?\d+(\.\d+)?$";
-			Match match = Regex.Match(_parameter, doubleOk);
-			if (match.Success)
-				return double.Parse(match.Groups[0].Value);
-
-			throw new FormatException("Number must be an correct decimal.");
-			
-		}
-
-		/// <summary>
-		/// The method that pases the float type.
-		/// </summary>
-		/// <param name="_parameter"> The string to parse to the float type. </param>
-		/// <returns> The string that matches the float type. </returns>
-		public static float FloatType(string _parameter)
-		{
-			string floatOk = @"^(\d+(\.\d+)?)f$";
-			Match match = Regex.Match(_parameter, floatOk);
-			
-			if (match.Success)
-				return float.Parse(match.Groups[1].Value);
-
-			throw new FormatException("Number must be an integer or decimal and end with 'f'.");
-		}
-
-		/// <summary>
-		/// The method that pases the bool type.
-		/// </summary>
-		/// <param name="_parameter"> The string to parse to the bool type. </param>
-		/// <returns> The string that matches the bool type. </returns>
-		//public static bool BoolType(string _parameter) => bool.Parse(_parameter);
-
-		/// <summary>
-		/// Extracts the string value by removing the leading hyphen ('-') from the specified parameter.
-		/// </summary>
-		/// <param name="_parameter">The input string, which must begin with a hyphen ('-').</param>
-		/// <returns>A string with the leading hyphen removed from the input parameter.</returns>
-		/// <exception cref="FormatException">Thrown if the input string does not contain a leading hyphen ('-').</exception>
-		//public static string StringType(string _parameter)
-		//{
-	//		string pattern = @"^""([^""\\ \t]*(?:\\.[^""\\ \t]*)*)""$";
-		//	Match match = Regex.Match(_parameter,pattern);
-		//	if (match.Success)
-		//		return match.Groups[1].ToString();
-
-		//	throw new FormatException("Strings must be enclosed in quotation marks.");
-		//}
-
-		/// <summary>
 		/// Converts a string representation of an array of integers into an actual integer array.
 		/// </summary>
 		/// <param name="_parameter">A string containing the array of integers, formatted as a comma-separated list enclosed in square brackets
@@ -177,49 +74,43 @@ namespace Command_Interpreter
 		/// <returns>An array of integers parsed from the input string.</returns>
 		/// <exception cref="FormatException">Thrown if the input string is not properly formatted. The string must be enclosed in square brackets ("[ ]")
 		/// and the elements must be separated by commas (",") without spaces or periods.</exception>
-		//public static int[] ArrayIntType(string _parameter)
+		public static int[] ArrayIntType(GroupCollection groups)
+		{
+			int[] returnArraytype;
+
+			returnArraytype = new int[groups[1].Length + groups[2].Captures.Count];
+			returnArraytype[0] = int.Parse(groups[1].Value);
+			var groupTwoCapture = groups[2].Captures;
+			for (int i = 0; i < groupTwoCapture.Count; i++)
+			{
+				var converttoint = int.Parse(groupTwoCapture[i].Value);
+				returnArraytype[i + 1] = converttoint;
+			}
+		
+			return returnArraytype;
+		}
+
+		//public static float[] ArrayFloatType(string _parameter)
 		//{
-		//	Match match = Regex.Match(_parameter, @"^\[(-?\d+)(?:,(-?\d+))*\]$");
-		//	int[] returnArraytype;
+		//	Match match = Regex.Match(_parameter, @"^\[(-?\d+(\.\d+)?f)(?:,(-?\d+(\.\d+)?f))*\]$");
+		//	float[] returnArraytype;
 
 		//	if (match.Success)
 		//	{
-		//		returnArraytype = new int [match.Groups[1].Length + match.Groups[2].Captures.Count];
-		//		returnArraytype[0] = IntType(match.Groups[1].Value);
+		//		returnArraytype = new float[match.Groups[1].Length + match.Groups[2].Captures.Count];
+		//		returnArraytype[0] = FloatType(match.Groups[1].Value);
 		//		var groupTwoCapture = match.Groups[2].Captures;
 		//		for (int i = 0; i < groupTwoCapture.Count; i++)
 		//		{
-		//			var converttoint = IntType(groupTwoCapture[i].Value);
+		//			var converttoint = FloatType(groupTwoCapture[i].Value);
 		//			returnArraytype[i + 1] = converttoint;
 		//		}
 		//	}
 		//	else
-		//		throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Int types");
+		//		throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Float types");
 
 		//	return returnArraytype;
 		//}
-
-		public static float[] ArrayFloatType(string _parameter)
-		{
-			Match match = Regex.Match(_parameter, @"^\[(-?\d+(\.\d+)?f)(?:,(-?\d+(\.\d+)?f))*\]$");
-			float[] returnArraytype;
-
-			if (match.Success)
-			{
-				returnArraytype = new float[match.Groups[1].Length + match.Groups[2].Captures.Count];
-				returnArraytype[0] = FloatType(match.Groups[1].Value);
-				var groupTwoCapture = match.Groups[2].Captures;
-				for (int i = 0; i < groupTwoCapture.Count; i++)
-				{
-					var converttoint = FloatType(groupTwoCapture[i].Value);
-					returnArraytype[i + 1] = converttoint;
-				}
-			}
-			else
-				throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Float types");
-
-			return returnArraytype;
-		}
 
 		/// <summary>
 		/// Compares the parameter signatures of two methods to determine if they are identical.
