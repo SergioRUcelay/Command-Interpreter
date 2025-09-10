@@ -28,25 +28,27 @@ using System.Text.RegularExpressions;
 
 namespace Command_Interpreter
 {
+	public delegate object Parser(GroupCollection groups);
+
 	/// <summary>
 	/// This class handles parameters. It receives an array of strings, compares them with parameter type maps, and parses them to their appropriate types.
 	/// </summary>
-	internal class Parameters
+	public class Parameters
 	{
-		public delegate object Parser(GroupCollection groups);
 
-		 public static readonly Dictionary<string, (string regex, Parser parser)> _params;
 
-		static Parameters() 
+		public static readonly Dictionary<string, (string regex, Parser parser)> _params;
+
+		static Parameters()
 		{
 			_params = new() {
-				{ "Int32",			(@"^\d+(?=\s|$)",				groups => int.Parse(groups[0].Value))},
-				{ "Boolean",		(@"^\b(?:true|false)\b",		groups => bool.Parse(groups[0].Value))},
-				{ "Double",			(@"^(-?\d+(?:\.\d+)?)([dD])",	groups => double.Parse(groups[1].Value)) },
-				{ "Single",			(@"^(-?\d+(?:\.\d+)?)([fF])",	groups => float.Parse(groups[1].Value)) },
-				{ "String",			(@"""([^""]*)""",				groups => groups[1].Value )},
+				{ "Int32",          (@"^\d+(?=\s|$)",               groups => int.Parse(groups[0].Value))},
+				{ "Boolean",        (@"^\b(?:true|false)\b",        groups => bool.Parse(groups[0].Value))},
+				//{ "Double",			(@"^(-?\d+(?:\.\d+)?)([dD])",	groups => double.Parse(groups[1].Value)) },
+				{ "Single",         (@"^(-?\d+(?:\.\d+)?)([fF])",   groups => float.Parse(groups[1].Value)) },
+				{ "String",         (@"""([^""]*)""",               groups => groups[1].Value )},
 				{ "Int32[]",       (@"^\[(-?\d+)(?:,(-?\d+))*\]$", ArrayIntType)},
-				{ "UnquotedString",	(@"^(\S+)",						groups => groups[1].Value )},
+				//{ "UnquotedString",	(@"^(\S+)",						groups => groups[1].Value )},
 			};
 		}
 
@@ -64,7 +66,6 @@ namespace Command_Interpreter
 			}
 			return true;
 		}
-
 
 		/// <summary>
 		/// Converts a string representation of an array of integers into an actual integer array.
@@ -86,31 +87,9 @@ namespace Command_Interpreter
 				var converttoint = int.Parse(groupTwoCapture[i].Value);
 				returnArraytype[i + 1] = converttoint;
 			}
-		
+
 			return returnArraytype;
 		}
-
-		//public static float[] ArrayFloatType(string _parameter)
-		//{
-		//	Match match = Regex.Match(_parameter, @"^\[(-?\d+(\.\d+)?f)(?:,(-?\d+(\.\d+)?f))*\]$");
-		//	float[] returnArraytype;
-
-		//	if (match.Success)
-		//	{
-		//		returnArraytype = new float[match.Groups[1].Length + match.Groups[2].Captures.Count];
-		//		returnArraytype[0] = FloatType(match.Groups[1].Value);
-		//		var groupTwoCapture = match.Groups[2].Captures;
-		//		for (int i = 0; i < groupTwoCapture.Count; i++)
-		//		{
-		//			var converttoint = FloatType(groupTwoCapture[i].Value);
-		//			returnArraytype[i + 1] = converttoint;
-		//		}
-		//	}
-		//	else
-		//		throw new FormatException("The array must be wrapped with \"[ ]\" and separeted with \",\". And contain only Float types");
-
-		//	return returnArraytype;
-		//}
 
 		/// <summary>
 		/// Compares the parameter signatures of two methods to determine if they are identical.

@@ -44,7 +44,7 @@
 			<!-- Return for list -->
 			<xsl:if test="Return/Entries/FunctionEntry">
 				<div>
-					<strong>Available Functions: </strong>
+					<strong>Available: </strong>
 					<table class="functions-table">
 						<thead>
 							<tr>
@@ -85,7 +85,7 @@
 						</tbody>
 					</table>
 					<div style="margin-top: 10px; font-size: 0.9em; color: #666;">
-						Total functions: <xsl:value-of select="count(Return/Entries/FunctionEntry)"/>
+						Total: <xsl:value-of select="count(Return/Entries/FunctionEntry)"/>
 					</div>
 				</div>
 			</xsl:if>

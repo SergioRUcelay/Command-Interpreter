@@ -59,13 +59,13 @@ namespace Command_Interpreter
 	/// </summary>
 	public struct FunctionEntry
 	{
-		public string Function = string.Empty;
-		public string Description = string.Empty;
-		public string[] Parameters;
-		public string Return;
+		public string? Function = string.Empty;
+		public string? Description = string.Empty;
+		public string[]? Parameters;
+		public string? Return;
 
 		// Constructor to initialize Function and Description.
-		public FunctionEntry(string function, string description, string[] parameters, string @return)
+		public FunctionEntry(string? function, string? description, string[]? parameters, string? @return)
 		{
 			Function = function;
 			Description = description;

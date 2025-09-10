@@ -24,7 +24,6 @@
 #endregion
 
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using static Command_Interpreter.Parameters;
@@ -44,11 +43,13 @@ namespace Command_Interpreter
 		// This is a string that describes the List function.
 		private readonly string help = "Function to list all functions registered.";
 		private readonly string helpCommand = "Function to list all functions for a command.";
+		private readonly string helpParsing = "Function to list all parsing types.";
 
 
 		public Commands()
 		{
 			commands["help"] = [(List, help), (ListCommand, helpCommand)]; // If the key doesn't exist, create a new list with the function and description.
+			commands["parsing"] = [(ListParser, helpParsing)];
 		}
 
 		/// <summary>
@@ -100,7 +101,7 @@ namespace Command_Interpreter
 						Debug.Assert(command.Length == length);
 						Debug.Assert(matchParam.Index == 0);
 						arrayparams.Add(parser(matchParam.Groups));
-						command =  command.Substring(matchParam.Length);
+						command = command.Substring(matchParam.Length);
 					}
 				}
 				if (command.Length == length)
@@ -122,7 +123,7 @@ namespace Command_Interpreter
 				var methodInfoParams = methodInfo.GetParameters();
 				object[] parameters = arrayparams.ToArray();
 
-				if(	(methodInfoParams.Length != parameters.Length) ||
+				if ((methodInfoParams.Length != parameters.Length) ||
 					(!methodInfoParams.Zip(parameters, (p1, p2) => p1.ParameterType == p2.GetType()).All(match => match)))
 					continue;
 
@@ -210,7 +211,7 @@ namespace Command_Interpreter
 			return list;
 		}
 
-		FuncList ListCommand(string command)
+		private FuncList ListCommand(string command)
 		{
 			FuncList list = new();
 			foreach ((Delegate del, string desc) in commands[command])
@@ -224,5 +225,31 @@ namespace Command_Interpreter
 			}
 			return list;
 		}
+
+		private FuncList ListParser()
+		{
+			FuncList list = new();
+			foreach (var key in _params.Keys)
+				list.Entries.Add(new FunctionEntry(key, null, null, null));
+
+			return list;
+		}
+
+		public void AddParsing(string key, string regex, Parser parser)
+		{
+			if (!_params.ContainsKey(key))
+				_params[key] = (regex, parser);
+			else
+				throw new Exception($"Can't add key mamed: {key}, because already exist.");
+		}
+
+		public void RemoveParsing(string key)
+		{
+			if (!_params.ContainsKey(key))
+				throw new Exception($"Can't remove. Key mamed: {key}, doesn't exist.");
+			else
+				_params.Remove(key);
+		}
+
 	}
 }

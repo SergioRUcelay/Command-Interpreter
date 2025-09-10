@@ -26,7 +26,7 @@
 
 		<!-- Return for list -->
 		<xsl:if test="Return/Entries/FunctionEntry">
-			<xsl:text>Available Functions:&#10;</xsl:text>
+			<xsl:text>Available:&#10;</xsl:text>
 			<xsl:text>&#10;</xsl:text>
 			<xsl:for-each select="Return/Entries/FunctionEntry">
 				<xsl:text>\x1B[34m  </xsl:text>
@@ -47,13 +47,13 @@
 				</xsl:if>
 
 				<xsl:text>\x1B[0m</xsl:text>
-				<xsl:text>	- </xsl:text>
+				<xsl:text>	</xsl:text>
 				<xsl:value-of select="Description"/>
 				<xsl:text>&#10;</xsl:text>
 			</xsl:for-each>
 			<xsl:text>&#10;</xsl:text>
 
-			<xsl:text>Total functions: </xsl:text>
+			<xsl:text>Total: </xsl:text>
 			<xsl:value-of select="count(Return/Entries/FunctionEntry)"/>
 			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
