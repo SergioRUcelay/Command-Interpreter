@@ -26,7 +26,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using static Command_Interpreter.Parameters;
 
 namespace Command_Interpreter
 {
@@ -37,26 +36,45 @@ namespace Command_Interpreter
 	/// <remarks>The <see cref="Commands"/> class allows users to define commands, execute commands based on user input.</remarks>
 	public class Commands
 	{
+		public Parameters Parameters = new();
+
 		// Function container.
 		private readonly Dictionary<string, List<(Delegate func, string desc)>> commands = [];
 
 		// This is a string that describes the List function.
 		private readonly string help = "Function to list all functions registered.";
 		private readonly string helpCommand = "Function to list all functions for a command.";
-		private readonly string helpParsing = "Function to list all parsing types.";
+		private readonly string helpParsing = "Function to list all parseable types.";
 
-
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Commands"/> class and sets up the available commands with their
+		/// corresponding functions and descriptions.
+		/// </summary>
+		/// <remarks>This constructor populates the internal dictionary of commands with predefined command names,
+		/// their associated functions, and descriptions. Each command is mapped to a list of tuples, where each tuple
+		/// contains a function and its corresponding help description.</remarks>
 		public Commands()
 		{
 			commands["help"] = [(List, help), (ListCommand, helpCommand)]; // If the key doesn't exist, create a new list with the function and description.
 			commands["parsing"] = [(ListParser, helpParsing)];
 		}
-
 		/// <summary>
-		/// Retrieves the array on the command line and sorts the Delegate and it's parameters.
+		/// Executes a command string by parsing its verb and parameters, and invokes the corresponding registered function.
 		/// </summary>
-		/// <param name="command">The user's string</param>
-		/// <returns></returns>
+		/// <remarks>The method parses the input command string to extract the verb and parameters. It then attempts to
+		/// find a registered function matching the verb and parameter signature. If a matching function is found, it is invoked
+		/// with the parsed parameters. <para> If no matching function is found, or if an error occurs during invocation, an
+		/// error message is returned in the <see cref="CommandReply.Message"/> property. </para> <para> This method is
+		/// case-insensitive for the command verb and trims unnecessary whitespace from the input string. </para></remarks>
+		/// <param name="command">The command string to execute. The string should begin with a verb, followed by optional parameters. Whitespace at
+		/// the beginning and end of the string is ignored.</param>
+		/// <returns>A <see cref="CommandReply"/> object containing the result of the command execution.  The <see
+		/// cref="CommandReply.Type"/> property indicates the outcome of the operation: <list type="bullet">
+		/// <item><description><see cref="CommandReply.LogType.Success"/> if the command was successfully
+		/// executed.</description></item> <item><description><see cref="CommandReply.LogType.Error"/> if the command was
+		/// invalid, no matching function was found, or an error occurred during execution.</description></item>
+		/// <item><description><see cref="CommandReply.LogType.Void"/> if the input command string was empty or
+		/// null.</description></item> </list></returns>
 		public CommandReply Command(string command)
 		{
 			// Remove all whitespace in the ends of the string.
@@ -83,7 +101,7 @@ namespace Command_Interpreter
 			}
 
 			//Command parsing and paramter extraction
-			List<object> arrayparams = [];
+			List<object?> arrayparams = [];
 			command = command.Substring(verb.Length);
 
 			// Analyze and structure the command line without the verb.
@@ -93,26 +111,27 @@ namespace Command_Interpreter
 				command = Regex.Replace(command, @"^\s+|\s+$", "");
 				int length = command.Length;
 
-				foreach ((string regex, Parser parser) in _params.Values)
+				foreach ((string regex, Delegate parser) in Parameters.Parsers.Values)
 				{
 					var matchParam = Regex.Match(command, regex);
 					if (matchParam.Success)
 					{
-						Debug.Assert(command.Length == length);
+						Debug.Assert(command.Length == length, "we seem to be finding two parsers for the same string, can't choose!");
 						Debug.Assert(matchParam.Index == 0);
-						arrayparams.Add(parser(matchParam.Groups));
+
+						var parsedObject = parser.DynamicInvoke(matchParam.Groups);
+						Debug.Assert(parsedObject != null, "Parse function returned null object, that's bad!");
+						arrayparams.Add(parsedObject);
+
 						command = command.Substring(matchParam.Length);
 					}
 				}
+
 				if (command.Length == length)
 				{
 					var nextWord = Regex.Match(command, @"^\S+").Value;
-					return new CommandReply
-					{
-						Type = CommandReply.LogType.Error,
-						Message = $"Syntax error, can't parse \"{nextWord}\"."
-
-					};
+					arrayparams.Add(nextWord);
+					command = command.Substring(nextWord.Length);
 				}
 			}
 			// Method match and actual invocation.
@@ -170,7 +189,7 @@ namespace Command_Interpreter
 		public void AddFunc(string command, Delegate func, string info)
 		{
 			//Checking that parameters exist and can be parsed
-			if (ValidateParams(func.GetMethodInfo()))
+			if (Parameters.ValidateParams(func.GetMethodInfo()))
 			{
 				if (!commands.TryGetValue(command.ToLower(), out var entry))
 					commands[command.ToLower()] = [(func, info)];
@@ -182,7 +201,7 @@ namespace Command_Interpreter
 					foreach (var existingFunction in entry)
 					{
 						var exisFuncParamm = existingFunction.func.GetMethodInfo().GetParameters();
-						check.Add(SignatureCompare(passFuncParameters, exisFuncParamm));
+						check.Add(Parameters.SignatureCompare(passFuncParameters, exisFuncParamm));
 					}
 					if (!check.Any(f => f))
 					{
@@ -210,7 +229,15 @@ namespace Command_Interpreter
 
 			return list;
 		}
-
+		/// <summary>
+		/// Retrieves a list of function entries associated with the specified command.
+		/// </summary>
+		/// <remarks>This method processes the delegates registered under the specified command and extracts metadata
+		/// such as parameter types and return types to populate the <see cref="FuncList"/>. The returned list will be empty
+		/// if no functions are associated with the given command.</remarks>
+		/// <param name="command">The name of the command for which to retrieve the associated function entries.</param>
+		/// <returns>A <see cref="FuncList"/> containing the function entries for the specified command. Each entry includes the
+		/// command name, a description, the parameter types, and the return type of the associated delegate.</returns>
 		private FuncList ListCommand(string command)
 		{
 			FuncList list = new();
@@ -225,31 +252,22 @@ namespace Command_Interpreter
 			}
 			return list;
 		}
-
+		/// <summary>
+		/// Creates and returns a new <see cref="FuncList"/> containing entries for each key in the parameter collection.
+		/// </summary>
+		/// <remarks>Each entry in the returned <see cref="FuncList"/> corresponds to a key in the internal parameter
+		/// collection. The entries are initialized with the key name, while other properties of the <see
+		/// cref="FunctionEntry"/> are set to <see langword="null"/>.</remarks>
+		/// <returns>A <see cref="FuncList"/> containing <see cref="FunctionEntry"/> objects for each key in the parameter collection.</returns>
 		private FuncList ListParser()
 		{
 			FuncList list = new();
-			foreach (var key in _params.Keys)
-				list.Entries.Add(new FunctionEntry(key, null, null, null));
+			foreach (var key in  Parameters.Parsers.Keys)
+				list.Entries.Add(new FunctionEntry(key.Name, null, null, null));
 
 			return list;
 		}
 
-		public void AddParsing(string key, string regex, Parser parser)
-		{
-			if (!_params.ContainsKey(key))
-				_params[key] = (regex, parser);
-			else
-				throw new Exception($"Can't add key mamed: {key}, because already exist.");
-		}
-
-		public void RemoveParsing(string key)
-		{
-			if (!_params.ContainsKey(key))
-				throw new Exception($"Can't remove. Key mamed: {key}, doesn't exist.");
-			else
-				_params.Remove(key);
-		}
 
 	}
 }

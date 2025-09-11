@@ -1,11 +1,8 @@
 ﻿using Command_Interpreter;
 using ConsoleWeb;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.Xsl;
-using static Command_Interpreter.Parameters;
 
 Commands com = new();
 string _Int = "function that adds the given numbers.";
@@ -18,7 +15,7 @@ string _Double = "Function accepting double numbers";
 
 try
 {
-	com.AddParsing("Double", @"^(-?\d+(?:\.\d+)?)([dD])", groups => double.Parse(groups[1].Value));
+	com.Parameters.SetParser(@"^(-?\d+(?:\.\d+)?)([dD])", groups => double.Parse(groups[1].Value));
 	com.AddFunc("Exit", () => Ci.Terminate = true, "Quit the program");
 	com.AddFunc("Int", (int p, int f) => p + f, _Int);
 	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
@@ -34,15 +31,8 @@ try
 	com.AddFunc("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
 	com.AddFunc("test", new Func<float, int, float>(Ci.Test), "Subtracs int to float");
 	com.AddFunc("test", new Func<float, double, double>(Ci.Test), "Subtracs float to double");
-//	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
+	//	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
 	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
-
-	foreach (var a in _params)
-	{
-
-		Console.WriteLine(a.Key + ": " + a.Value);
-
-	}
 
 }
 catch (Exception ex)

@@ -28,40 +28,60 @@ using System.Text.RegularExpressions;
 
 namespace Command_Interpreter
 {
-	public delegate object Parser(GroupCollection groups);
+	public delegate T Parser<T>(GroupCollection groups);
 
 	/// <summary>
 	/// This class handles parameters. It receives an array of strings, compares them with parameter type maps, and parses them to their appropriate types.
 	/// </summary>
 	public class Parameters
 	{
+		public readonly Dictionary<Type, (string regex, Delegate parser)> Parsers = [];
 
-
-		public static readonly Dictionary<string, (string regex, Parser parser)> _params;
-
-		static Parameters()
+		public Parameters()
 		{
-			_params = new() {
-				{ "Int32",          (@"^\d+(?=\s|$)",               groups => int.Parse(groups[0].Value))},
-				{ "Boolean",        (@"^\b(?:true|false)\b",        groups => bool.Parse(groups[0].Value))},
-				//{ "Double",			(@"^(-?\d+(?:\.\d+)?)([dD])",	groups => double.Parse(groups[1].Value)) },
-				{ "Single",         (@"^(-?\d+(?:\.\d+)?)([fF])",   groups => float.Parse(groups[1].Value)) },
-				{ "String",         (@"""([^""]*)""",               groups => groups[1].Value )},
-				{ "Int32[]",       (@"^\[(-?\d+)(?:,(-?\d+))*\]$", ArrayIntType)},
-				//{ "UnquotedString",	(@"^(\S+)",						groups => groups[1].Value )},
-			};
+			SetParser(@"^\d+(?=\s|$)", groups => int.Parse(groups[0].Value));
+			SetParser(@"^\b(?:true|false)\b", groups => bool.Parse(groups[0].Value));
+			SetParser(@"^(-?\d+(?:\.\d+)?)([fF])", groups => float.Parse(groups[1].Value));
+			SetParser(@"""([^""]*)""", groups => groups[1].Value);
+			SetParser(@"^\[(-?\d+)(?:,(-?\d+))*\]$", ArrayIntType);
 		}
 
+		/// <summary>
+		/// Associates a regular expression with a parser for a specific type.
+		/// </summary>
+		/// <typeparam name="T">The type for which the parser is being set.</typeparam>
+		/// <param name="regex">The regular expression used to match input for the parser.</param>
+		/// <param name="parser">The parser instance that processes input matching the specified regular expression.</param>
+		/// <exception cref="Exception">Thrown if a parser for the specified type <typeparamref name="T"/> has already been set.</exception>
+		public void SetParser<T>(string regex, Parser<T> parser)
+		{
+			if (!Parsers.ContainsKey(typeof(T)))
+				Parsers[typeof(T)] = (regex, parser);
+			else
+				throw new Exception($"Can't add key mamed: {typeof(T).Name}, because already exist.");
+		}
+
+		/// <summary>
+		/// Removes the parser associated with the specified key type.
+		/// </summary>
+		/// <typeparam name="T">The type of the key used to identify the parser.</typeparam>
+		/// <param name="key">The key whose associated parser is to be removed.</param>
+		/// <exception cref="Exception">Thrown if the parser associated with the specified key type does not exist.</exception>
+		public void ClearParser<T>(T key)
+		{
+			if (!Parsers.Remove(typeof(T)))
+				throw new Exception($"Can't remove. Key mamed: {key}, doesn't exist.");
+		}
 		/// <summary>
 		/// Ensure that the parameters can be parsed by looking in parameters dictionary to see if the type exist.
 		/// </summary>
 		/// <param name="_methodInfo">The method that contains the parameters to compare.</param>
 		/// <exception cref="FormatException"></exception>
-		public static bool ValidateParams(MethodInfo _methodInfo)
+		public bool ValidateParams(MethodInfo _methodInfo)
 		{
 			foreach (var currentParam in _methodInfo.GetParameters())
 			{
-				if (!_params.TryGetValue(currentParam.ParameterType.Name, out (string regex, Parser parser) dictionaryFunc))
+				if (!Parsers.ContainsKey(currentParam.ParameterType))
 					throw new FormatException($"Can't parse parameter {currentParam.Name} of type {currentParam.ParameterType.Name} in function {_methodInfo.Name}");
 			}
 			return true;
@@ -75,7 +95,7 @@ namespace Command_Interpreter
 		/// <returns>An array of integers parsed from the input string.</returns>
 		/// <exception cref="FormatException">Thrown if the input string is not properly formatted. The string must be enclosed in square brackets ("[ ]")
 		/// and the elements must be separated by commas (",") without spaces or periods.</exception>
-		public static int[] ArrayIntType(GroupCollection groups)
+		public int[] ArrayIntType(GroupCollection groups)
 		{
 			int[] returnArraytype;
 
@@ -98,7 +118,7 @@ namespace Command_Interpreter
 		/// <param name="exixtFunc">An array of <see cref="ParameterInfo"/> objects representing the parameters of the second method.</param>
 		/// <returns><see langword="true"/> if both methods have the same number of parameters and their corresponding parameter types
 		/// match; otherwise, <see langword="false"/>.</returns>
-		public static bool SignatureCompare(ParameterInfo[] newFunc, ParameterInfo[] exixtFunc)
+		public bool SignatureCompare(ParameterInfo[] newFunc, ParameterInfo[] exixtFunc)
 		{
 			if (newFunc.Length == exixtFunc.Length)
 			{
