@@ -100,7 +100,7 @@ class Program
 - **Validation**: The interpreter checks each parameter against the regex pattern during command execution.
 - **Error Handling**: If a parameter fails validation, an XML-formatted error message is returned.
 
-For more detailed examples, check the [ConsoleApplication/](ConsoleApplication/) and [ConsoleWeb/](ConsoleWeb/) directories.
+For more detailed examples, check the [ConsoleApplication/](Application/) and [ConsoleWeb/](ConsoleWeb/) directories.
 
 ### Predefined Functions
 Command Interpreter comes with a set of built-in functions to enhance usability out of the box. Below is an overview of key predefined functions:
