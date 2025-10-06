@@ -6,7 +6,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.Xsl;
 
-Commands com = new();
+Interpreter interpreter = new();
 string _Int = "function that adds the given numbers.";
 string _String = "Function accepting string chains";
 string _Array = "Function accepting Arrays of int";
@@ -17,17 +17,22 @@ string _IntRest = "Function subtracts two given numbers";
 
 try
 {
-	com.AddFunc("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
-	com.AddFunc("Float", (float a, string b) => a + b, _Float);
-	com.AddFunc("Float", (float a) => a + 100, _Float);
-	com.AddFunc("Int", (int p, int f) => p + f, _Int);
-	com.AddFunc("Bool", (bool value) => value, _Bool);
-	com.AddFunc("IntRest", (int p, int f) => p - f, _IntRest);
-	com.AddFunc("Array", (int[] code) => 0, _Array);
-	com.AddFunc("test", new Func<int, int>(Ci.Test), "Add 100 to int");
-	com.AddFunc("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
-	com.AddFunc("test", new Action(Ci.Test), "Get you a 100");
-	com.AddFunc("Invalid", (double d) => d, "Function with invalid parameters");
+
+	// Registering a new parser type:
+	interpreter.Parameters.RegisterCustomType(@"^(-?\d+(?:\.\d+)?)([dD])", groups => double.Parse(groups[1].Value));
+
+	// Registration of different functions:
+	interpreter.RegisterFunction("String", (string SQLRequest, string SQLRequest2) => SQLRequest, _String);
+	interpreter.RegisterFunction("Float", (float a, string b) => a + b, _Float);
+	interpreter.RegisterFunction("Float", (float a) => a + 100, _Float);
+	interpreter.RegisterFunction("Int", (int p, int f) => p + f, _Int);
+	interpreter.RegisterFunction("Bool", (bool value) => value, _Bool);
+	interpreter.RegisterFunction("IntRest", (int p, int f) => p - f, _IntRest);
+	interpreter.RegisterFunction("Array", (int[] code) => 0, _Array);
+	interpreter.RegisterFunction("test", new Func<int, int>(Ci.Test), "Add 100 to int");
+	interpreter.RegisterFunction("test", new Func<int, int, int>(Ci.Test), "Add int numbers");
+	interpreter.RegisterFunction("test", new Action(Ci.Test), "Get you a 100");
+	interpreter.RegisterFunction("Invalid", (double d) => d, "Function with invalid parameters");
 
 }
 catch (FormatException ex)
@@ -57,7 +62,7 @@ app.Use(async (context, next) =>
 		if (context.WebSockets.IsWebSocketRequest)
 		{
 			using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-			await ReadWebSocket(webSocket, com);
+			await ReadWebSocket(webSocket, interpreter);
 		}
 		else
 		{
@@ -72,7 +77,7 @@ app.Use(async (context, next) =>
 app.Run();
 
 // Method for handling the Byte string that reaches us through the webSocket
-static async Task ReadWebSocket(WebSocket socket, Commands com)
+static async Task ReadWebSocket(WebSocket socket, Interpreter com)
 {
 	byte[] buffer = new byte[10234]; // Creating the byte array where we will save the request.
 	while (socket.State == WebSocketState.Open) // As long as the websocket is open.
@@ -90,6 +95,8 @@ static async Task ReadWebSocket(WebSocket socket, Commands com)
 		await socket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None); // Enviamos la respuesta.
 	}
 }
+
+// XSLT XML Conversion into flat text, to show in console.
 static string XmlToText(string xml)
 {
 	XslCompiledTransform xslTranslater = new();
@@ -104,6 +111,7 @@ static string XmlToText(string xml)
 	return xml.Replace("\\x1b", "\x1b"); // Replace the \x1b with the escape character for color as .NET can not generate escape characters from Xslt.
 }
 
+// Serializable class conversion returned by CI, in XML format.
 static string WriterOfNewXmlString<T>(T newxmlmessage)
 {
 	string consoleOutput;

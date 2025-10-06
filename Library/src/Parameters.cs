@@ -39,11 +39,11 @@ namespace Command_Interpreter
 
 		public Parameters()
 		{
-			SetParser(@"^\d+(?=\s|$)", groups => int.Parse(groups[0].Value));
-			SetParser(@"^\b(?:true|false)\b", groups => bool.Parse(groups[0].Value));
-			SetParser(@"^(-?\d+(?:\.\d+)?)([fF])", groups => float.Parse(groups[1].Value));
-			SetParser(@"""([^""]*)""", groups => groups[1].Value);
-			SetParser(@"^\[(-?\d+)(?:,(-?\d+))*\]$", ArrayIntType);
+			RegisterCustomType(@"^\d+(?=\s|$)", groups => int.Parse(groups[0].Value));
+			RegisterCustomType(@"^\b(?:true|false)\b", groups => bool.Parse(groups[0].Value));
+			RegisterCustomType(@"^(-?\d+(?:\.\d+)?)([fF])", groups => float.Parse(groups[1].Value));
+			RegisterCustomType(@"""([^""]*)""", groups => groups[1].Value);
+			RegisterCustomType(@"^\[(-?\d+)(?:,(-?\d+))*\]$", ArrayIntType);
 		}
 
 		/// <summary>
@@ -53,7 +53,7 @@ namespace Command_Interpreter
 		/// <param name="regex">The regular expression used to match input for the parser.</param>
 		/// <param name="parser">The parser instance that processes input matching the specified regular expression.</param>
 		/// <exception cref="Exception">Thrown if a parser for the specified type <typeparamref name="T"/> has already been set.</exception>
-		public void SetParser<T>(string regex, Parser<T> parser)
+		public void RegisterCustomType<T>(string regex, Parser<T> parser)
 		{
 			if (!Parsers.ContainsKey(typeof(T)))
 				Parsers[typeof(T)] = (regex, parser);
@@ -72,6 +72,7 @@ namespace Command_Interpreter
 			if (!Parsers.Remove(typeof(T)))
 				throw new Exception($"Can't remove. Key mamed: {key}, doesn't exist.");
 		}
+
 		/// <summary>
 		/// Ensure that the parameters can be parsed by looking in parameters dictionary to see if the type exist.
 		/// </summary>

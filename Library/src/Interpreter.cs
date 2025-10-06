@@ -23,7 +23,6 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -33,8 +32,8 @@ namespace Command_Interpreter
 	/// Provides functionality for managing and executing commands, including adding, removing, validating, and listing
 	/// commands.
 	/// </summary>
-	/// <remarks>The <see cref="Commands"/> class allows users to define commands, execute commands based on user input.</remarks>
-	public class Commands
+	/// <remarks>The <see cref="Interpreter"/> class allows users to define commands, execute commands based on user input.</remarks>
+	public class Interpreter
 	{
 		public Parameters Parameters = new();
 
@@ -47,17 +46,18 @@ namespace Command_Interpreter
 		private readonly string helpParsing = "Function to list all parseable types.";
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Commands"/> class and sets up the available commands with their
+		/// Initializes a new instance of the <see cref="Interpreter"/> class and sets up the available commands with their
 		/// corresponding functions and descriptions.
 		/// </summary>
 		/// <remarks>This constructor populates the internal dictionary of commands with predefined command names,
 		/// their associated functions, and descriptions. Each command is mapped to a list of tuples, where each tuple
 		/// contains a function and its corresponding help description.</remarks>
-		public Commands()
+		public Interpreter()
 		{
 			commands["help"] = [(List, help), (ListCommand, helpCommand)]; // If the key doesn't exist, create a new list with the function and description.
 			commands["parsing"] = [(ListParser, helpParsing)];
 		}
+
 		/// <summary>
 		/// Executes a command string by parsing its verb and parameters, and invokes the corresponding registered function.
 		/// </summary>
@@ -75,8 +75,9 @@ namespace Command_Interpreter
 		/// invalid, no matching function was found, or an error occurred during execution.</description></item>
 		/// <item><description><see cref="CommandReply.LogType.Void"/> if the input command string was empty or
 		/// null.</description></item> </list></returns>
-		public CommandReply Command(string command)
+		public CommandReply Command(string _command)
 		{
+			var command = _command;
 			// Remove all whitespace in the ends of the string.
 			command = command.TrimStart().Trim();
 
@@ -116,11 +117,7 @@ namespace Command_Interpreter
 					var matchParam = Regex.Match(command, regex);
 					if (matchParam.Success)
 					{
-						Debug.Assert(command.Length == length, "we seem to be finding two parsers for the same string, can't choose!");
-						Debug.Assert(matchParam.Index == 0);
-
 						var parsedObject = parser.DynamicInvoke(matchParam.Groups);
-						Debug.Assert(parsedObject != null, "Parse function returned null object, that's bad!");
 						arrayparams.Add(parsedObject);
 
 						command = command.Substring(matchParam.Length);
@@ -153,7 +150,7 @@ namespace Command_Interpreter
 					{
 						Type = CommandReply.LogType.Success,
 						Return = functionReply,
-						FunctionCalled = verb
+						FunctionCalled = _command
 					};
 				}
 				catch (TargetInvocationException ex)
@@ -186,7 +183,7 @@ namespace Command_Interpreter
 		/// given command.</param>
 		/// <param name="info">A description of the command, providing additional context or usage information.</param>
 		/// <exception cref="InvalidOperationException">Thrown if a function with the same name and signature already exists for the specified command.</exception>
-		public void AddFunc(string command, Delegate func, string info)
+		public void RegisterFunction(string command, Delegate func, string info)
 		{
 			//Checking that parameters exist and can be parsed
 			if (Parameters.ValidateParams(func.GetMethodInfo()))
@@ -229,6 +226,7 @@ namespace Command_Interpreter
 
 			return list;
 		}
+
 		/// <summary>
 		/// Retrieves a list of function entries associated with the specified command.
 		/// </summary>
@@ -252,6 +250,7 @@ namespace Command_Interpreter
 			}
 			return list;
 		}
+
 		/// <summary>
 		/// Creates and returns a new <see cref="FuncList"/> containing entries for each key in the parameter collection.
 		/// </summary>
@@ -262,7 +261,7 @@ namespace Command_Interpreter
 		private FuncList ListParser()
 		{
 			FuncList list = new();
-			foreach (var key in  Parameters.Parsers.Keys)
+			foreach (var key in Parameters.Parsers.Keys)
 				list.Entries.Add(new FunctionEntry(key.Name, null, null, null));
 
 			return list;

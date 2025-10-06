@@ -14,7 +14,7 @@
 				<xsl:text>\x1B[31m Error \x1B[0m&#10;</xsl:text>
 			</xsl:when>
 			<xsl:when test="Type = 'Success'">
-				<xsl:text>\x1B[32m Success \x1B[0m&#10;</xsl:text>
+				<!--<xsl:text>\x1B[32m Success \x1B[0m&#10;</xsl:text>-->
 			</xsl:when>
 			<xsl:when test="Type = 'Void'">
 				<xsl:text>\x1B[33m Void \x1B[0m&#10;</xsl:text>

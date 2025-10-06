@@ -15,18 +15,28 @@
 
 	<xsl:template match="CommandReply">
 		<div style="margin-bottom: 1em; font-family: monospace; color: white; font-size: 17px">
+			
+			<!-- Timestamp -->
+			<xsl:if test="Timestamp">
+				<div style="background-color: grey; color: black">
+					<!--<strong>Timestamp: </strong>-->
+					<xsl:value-of select="concat(substring(Timestamp, 6, 2), '/', substring(Timestamp, 9, 2), '/', substring(Timestamp, 1, 4), ' ',
+					substring(Timestamp, 12, 2), 'h:', substring(Timestamp, 15, 2), 'm:',substring(Timestamp, 18, 2),'s')"/>
+					
+					<!-- Function Called -->
+					<xsl:if test="FunctionCalled">
+						<strong>
+							> 
+							<xsl:value-of select="FunctionCalled"/>
+						</strong>
+					</xsl:if>
+				</div>
+			</xsl:if>
 
 			<!-- Type -->
 			<xsl:choose>
 				<xsl:when test="Type = 'Error'">
 					<div style="color: red;">
-						<strong>
-							<xsl:value-of select="Type"/>
-						</strong>
-					</div>
-				</xsl:when>
-				<xsl:when test="Type = 'Success'">
-					<div style="color: green;">
 						<strong>
 							<xsl:value-of select="Type"/>
 						</strong>
@@ -45,15 +55,12 @@
 			<xsl:if test="Return/Entries/FunctionEntry">
 				<div>
 					<strong>Available: </strong>
-					<table class="functions-table">
-						<thead>
+					<table class="functions-table" style="text-align: left; width: 80%">
 							<tr>
 								<th>Function</th>
 								<th>Parameters</th>
 								<th>Description</th>
 							</tr>
-						</thead>
-						<tbody>
 							<xsl:for-each select="Return/Entries/FunctionEntry">
 								<tr>
 									<!-- Funtion with signature -->
@@ -81,8 +88,6 @@
 									</td>
 								</tr>
 							</xsl:for-each>
-
-						</tbody>
 					</table>
 					<div style="margin-top: 10px; font-size: 0.9em; color: #666;">
 						Total: <xsl:value-of select="count(Return/Entries/FunctionEntry)"/>
@@ -93,23 +98,6 @@
 				<div style="color: grey;">
 					<strong>Return: </strong>
 					<xsl:value-of select="Return"/>
-				</div>
-			</xsl:if>
-
-			<!-- Timestamp -->
-			<xsl:if test="Timestamp">
-				<div>
-					<strong>Timestamp: </strong>
-					<xsl:value-of select="concat(substring(Timestamp, 6, 2), '/', substring(Timestamp, 9, 2), '/', substring(Timestamp, 1, 4), ' ',
-					substring(Timestamp, 12, 2), 'h:', substring(Timestamp, 15, 2), 'm:',substring(Timestamp, 18, 2),'s')"/>
-				</div>
-			</xsl:if>
-
-			<!-- Function Called -->
-			<xsl:if test="FunctionCalled">
-				<div>
-					<strong>Function: </strong>
-					<xsl:value-of select="FunctionCalled"/>
 				</div>
 			</xsl:if>
 

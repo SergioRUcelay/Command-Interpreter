@@ -6,48 +6,6 @@
     <title>WebSocket on ASP.NET Core</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
 
-    <script>
-		const socket = new WebSocket("wss://localhost:7061/ws");
-
-		socket.onopen = () => {
-			console.log("Connected to the WebSocket server");
-		}
-
-		socket.onmessage = (event) => {
-			document.getElementById("response").innerHTML += `<p>${event.data}</p>`;
-			const contenedor = document.getElementById("response-container");
-			contenedor.scrollTop = contenedor.scrollHeight; console.log("Message received")
-		}
-
-		function send(message) {
-			socket.send(message);
-			console.log("Message sent");
-        }
-
-		document.addEventListener('DOMContentLoaded', function () {
-			document.addEventListener('click', function (event) {
-			
-				if (event.target.classList.contains('capture')) {
-					const popupImg = document.getElementById('popupImage');
-					popupImg.src = event.target.src;
-					document.getElementById('popupOverlay').style.display = 'block';
-					popupImg.style.display = 'block';
-				}
-			});
-
-			document.addEventListener('mouseover', function (event) {
-				if (event.target.classList.contains('capture')) {
-					event.target.style.cursor = 'pointer';
-				}
-			});
-		});
-
-		function closePopup() {
-			document.getElementById('popupOverlay').style.display = 'none';
-			document.getElementById('popupImage').style.display = 'none';
-        }
-    </script>
-
     <style>
         body{
         background-color: rgb(23, 23, 103);
@@ -135,9 +93,52 @@
                   <div id="response"></div>
               </div>
               <div id="message-box">
-                  <input id="message" placeholder="Send message" placeholder-color="" onkeydown="if (event.key =='Enter' && this.value != '') {send(this.value); this.value= '';}" />
+                  <input autofocus id="message" placeholder="Send message" placeholder-color="" onkeydown="if (event.key =='Enter' && this.value != '') {send(this.value); this.value= '';}"/>
               </div>
-           </div>
+          </div>
       </div>
+
+      <script>
+          const socket = new WebSocket("wss://localhost:7061/ws");
+
+          socket.onopen = () => {
+              console.log("Connected to the WebSocket server");
+          }
+
+          socket.onmessage = (event) => {
+              document.getElementById("response").innerHTML += `<p>${event.data}</p>`;
+              const contenedor = document.getElementById("response-container");
+              contenedor.scrollTop = contenedor.scrollHeight; console.log("Message received")
+          }
+
+          function send(message) {
+              socket.send(message);
+              console.log("Message sent");
+          }
+
+          document.addEventListener('DOMContentLoaded', function () {
+              document.addEventListener('click', function (event) {
+
+                  if (event.target.classList.contains('capture')) {
+                      const popupImg = document.getElementById('popupImage');
+                      popupImg.src = event.target.src;
+                      document.getElementById('popupOverlay').style.display = 'block';
+                      popupImg.style.display = 'block';
+                  }
+              });
+
+              document.addEventListener('mouseover', function (event) {
+                  if (event.target.classList.contains('capture')) {
+                      event.target.style.cursor = 'pointer';
+                  }
+              });
+          });
+
+          function closePopup() {
+              document.getElementById('popupOverlay').style.display = 'none';
+              document.getElementById('popupImage').style.display = 'none';
+          }
+      </script>
+
   </body>
 </html>
