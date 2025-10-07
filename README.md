@@ -11,7 +11,7 @@ Command Interpreter provides a robust solution for executing functions dynamical
 ### Key Features
 - **Dynamic Function Invocation**: Execute functions by sending text-based commands from any interface.
 - **Parameter Validation**: Automatically verifies the number and type of parameters required by the function.
-- **Custom Type Validation**: Define custom parameter types with regex-based validation for precise control.
+- **Custom Parameter Types**: Define custom parameter types with regex-based validation for precise control.
 - **Structured Output**: Returns results in a consistent XML format for easy integration.
 - **Cross-Platform Compatibility**: Works with custom consoles, OS terminals, browsers, or any text-based interface.
 - **Lightweight and Modular**: Delivered as a DLL, easily integrated into your projects.
@@ -56,20 +56,19 @@ class Program
         interpreter.RegisterFunction("AddNumbers", (int a, int b) => a + b), _Int);
     }
 }
-
-// Run the program.
 ```
+<img height="200" alt="Ci-console-addnumbers" src="https://github.com/user-attachments/assets/0fd20f09-121f-45b8-9f4e-8e1403fc3085" />
 
 ### Command Syntax
 - Commands follow the format: `FunctionName param1 param2 ...`
 - Parameters are validated for type and count before execution.
-- Results are returned in XML format for easy parsing.
+- Results are returned in XML format for easy parsing. The above result was made into plain text with one of the included sample XSLT sheets.
 
-### Custom Type Validation with Regex
-Command Interpreter allows you to define custom parameter types using regular expressions (regex) for precise validation. This is useful for enforcing specific formats, such as email addresses, phone numbers, or custom string patterns.
-In order to implement this function, you must call the `Parameters` field of the `Interpreter` class, and then the `RegisterCustomType` function that receives the regex string that defines the type form, and then the delegate that defines the parsing.
+## Custom Types:
+Command Interpreter allows you to define custom parameter types using regular expressions (regex) for precise validation. This is useful for both enforcing specific formats, such as email addresses, phone numbers, or extending through custom string patterns.
+You can add new types through the `Parameters` member of the `Interpreter` class, and then the `RegisterCustomType` function that receives both the regex string used for parsing the new type and a delegate that creates the C# type from the parsed data. The return type of said delegate is, indeed, the newly defined type.
 
-#### Example: Registering a Custom Type with Regex
+#### Example: Registering a Vector3 type parser
 ``` Csharp
 using CommandInterpreter;
 using System.Numerics;
@@ -88,12 +87,11 @@ class Program
 
         // Register a function that accepts an Vector3
         string _v3= "Function to send a Vector3";
-        interpreter.RegisterFunction("Setpoint", (Vector3) => $"Create a new point in {Vector3}", _v3);
+        interpreter.RegisterFunction("Setpoint", (Vector3 v) => $"Create a new point in {v}", _v3);
     }
 }
-
-// Run the program.
 ```
+<img height="200" alt="Ci-console-setpoint" src="https://github.com/user-attachments/assets/5fba5085-1b91-444f-8aae-70aeffb38881" />
 
 #### How It Works
 - **RegisterCustomType**: Use this method to define a custom type with a regex pattern.
@@ -111,11 +109,14 @@ Command Interpreter comes with a set of built-in functions to enhance usability 
   - **Parsing**: Displays all registered functions available in the Command Interpreter instance.
       - **Syntax**: `parsing`
       - **Output**: Returns an XML-formatted list of types that can be parsed.
-  #### `Parameter` field:
+   
+### Classes
+ #### `Interpreter`:
+  - **RegisterFunction(string command, Delegate func, string info)**: Adds a command and its associated delegate function to the command
+ #### `Parameters` (as a member of the Interpreter class):
   - **RegisterCustomType<T>(string regex, Parser<T> parser)**: Associates a regular expression with a parser for a specific type.
   - **ClearParser<T>(T key)**: Removes the parser associated with the specified key type.
-  #### `Interpreter` class:
-  - **RegisterFunction(string command, Delegate func, string info)**: Adds a command and its associated delegate function to the command                                                                         registry.
+                                                                          registry.
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute to Command Interpreter:
