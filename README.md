@@ -223,7 +223,7 @@ Among those you can see the `cap` function that captures the screen, mentioned a
 
  ...and of course, several other functions that modify its visual appearance.
 
- In this link to the [Video](https://youtu.be/zr9vkhosWPQ)., you can see a complete example of the registered functions and how they behave and interact with the console:
+ In this link to the [Video]([https://youtu.be/zr9vkhosWPQ](https://youtu.be/g0YjEpLHpeQ))., you can see a complete example of the registered functions and how they behave and interact with the console:
 
 
 ## 🤝 Contributing
