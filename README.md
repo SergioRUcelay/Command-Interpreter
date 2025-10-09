@@ -116,7 +116,27 @@ Command Interpreter comes with a set of built-in functions to enhance usability 
  #### `Parameters` (as a member of the Interpreter class):
   - **RegisterCustomType<T>(string regex, Parser<T> parser)**: Associates a regular expression with a parser for a specific type.
   - **ClearParser<T>(T key)**: Removes the parser associated with the specified key type.
-                                                                          registry.
+
+### Application to a project:
+
+As an example of applying CI to an external project, I used my own ArkaClone project. (You can visit it to see an application of an FSM and
+linear algebra in collisions.) In the project, I created various functions to alter the game's behavior at runtime. I implemented a very simple
+console in a small WebApp to communicate with Arkanoid.
+   From there, the first function I call is `help` to list all the registered functions, as seen in the example.
+
+ <img height="500" alt="Arkanoid_Ci_01" src="https://github.com/user-attachments/assets/98afcc37-ac2f-4c80-9bf9-866d3ce11b09" /> 
+ 
+ 
+Another function called `cap` takes a screenshot of the game. And several others that modify its visual appearance:
+
+ 
+ <img  height="500" alt="Arkanoid_Ci_03" src="https://github.com/user-attachments/assets/f914f306-9080-4c67-969f-d0bd71a7352c" />
+
+ 
+
+ In this link to the [Video](https://youtu.be/zr9vkhosWPQ)., you can see a complete example of the registered functions and how they behave and interact with the console:
+
+
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute to Command Interpreter:
